@@ -212,6 +212,7 @@ export class CameraAnimator {
     }
 
     this.isPlaying = true;
+    // eslint-disable-next-line no-console
     console.log(`🎬 播放动画: ${type}`);
   }
 

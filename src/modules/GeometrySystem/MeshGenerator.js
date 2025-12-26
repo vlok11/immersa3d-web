@@ -52,6 +52,7 @@ export class MeshGenerator {
 
     this._disposables.push(geometry, material);
 
+    // eslint-disable-next-line no-console
     console.log(`✅ 网格生成完成 (分辨率: ${resolution}x${resolution})`);
     return mesh;
   }
@@ -165,6 +166,7 @@ export class MeshGenerator {
 
     this._disposables.push(geometry, material);
 
+    // eslint-disable-next-line no-console
     console.log(`✅ 点云生成完成 (${positions.length / 3} 个点)`);
     return points;
   }
@@ -200,6 +202,7 @@ export class MeshGenerator {
       item.dispose?.();
     }
     this._disposables = [];
+    // eslint-disable-next-line no-console
     console.log('🗑️ MeshGenerator 已销毁');
   }
 }

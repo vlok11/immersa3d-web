@@ -3,5 +3,5 @@
  * @module modules/CameraSystem
  */
 
-export { CameraAnimator, AnimationType, EasingType } from './CameraAnimator.js';
+export { CameraAnimator, AnimationType, EasingType, ViewPreset } from './CameraAnimator.js';
 export { CameraPath, PathPreset } from './CameraPath.js';

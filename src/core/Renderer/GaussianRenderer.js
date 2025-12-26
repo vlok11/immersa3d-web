@@ -4,6 +4,8 @@
  * @description 基于 Spark 的 3DGS 渲染器，支持加载和渲染 .splat/.ply/.spz 文件
  */
 
+// THREE 类型在 JSDoc 中使用
+// eslint-disable-next-line no-unused-vars
 import * as THREE from 'three';
 
 /**
@@ -49,6 +51,7 @@ export class GaussianRenderer {
    */
   async init() {
     try {
+      // eslint-disable-next-line no-console
       console.log('🔄 正在初始化 GaussianRenderer...');
 
       // 动态导入 Spark
@@ -56,8 +59,10 @@ export class GaussianRenderer {
       this._spark = spark;
 
       this._ready = true;
+      // eslint-disable-next-line no-console
       console.log('✅ GaussianRenderer 初始化完成');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('❌ GaussianRenderer 初始化失败:', error);
       throw error;
     }
@@ -88,6 +93,7 @@ export class GaussianRenderer {
     this._splatMeshes.forEach((mesh) => {
       mesh.visible = enabled;
     });
+    // eslint-disable-next-line no-console
     console.log(`🎮 GaussianRenderer ${enabled ? '已启用' : '已禁用'}`);
   }
 
@@ -102,11 +108,12 @@ export class GaussianRenderer {
       throw new Error('GaussianRenderer 未初始化');
     }
 
+    // eslint-disable-next-line no-console
     console.log(`🔄 正在加载 3DGS 文件: ${url}`);
     const startTime = performance.now();
 
     try {
-      const { SplatLoader, SplatMesh, PackedSplats } = this._spark;
+      const { SplatLoader, SplatMesh } = this._spark;
 
       // 创建加载器
       const loader = new SplatLoader();
@@ -141,10 +148,12 @@ export class GaussianRenderer {
       this._splatMeshes.push(splatMesh);
 
       const elapsed = performance.now() - startTime;
+      // eslint-disable-next-line no-console
       console.log(`✅ 3DGS 文件加载完成 (${elapsed.toFixed(2)}ms)`);
 
       return splatMesh;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('❌ 3DGS 文件加载失败:', error);
       throw error;
     }
@@ -157,15 +166,16 @@ export class GaussianRenderer {
    * @param {Object} [options] - 加载选项
    * @returns {Promise<Object>} 加载的 SplatMesh
    */
-  async loadFromBuffer(buffer, fileType, options = {}) {
+  async loadFromBuffer(buffer, fileType, _options = {}) {
     if (!this.isReady()) {
       throw new Error('GaussianRenderer 未初始化');
     }
 
+    // eslint-disable-next-line no-console
     console.log(`🔄 正在从 Buffer 加载 3DGS (${fileType})...`);
 
     try {
-      const { unpackSplats, SplatMesh, PackedSplats } = this._spark;
+      const { unpackSplats, SplatMesh } = this._spark;
 
       // 解包数据
       const packedSplats = await unpackSplats(new Uint8Array(buffer), fileType);
@@ -179,9 +189,11 @@ export class GaussianRenderer {
       this.scene.add(splatMesh);
       this._splatMeshes.push(splatMesh);
 
+      // eslint-disable-next-line no-console
       console.log('✅ 3DGS Buffer 加载完成');
       return splatMesh;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('❌ 3DGS Buffer 加载失败:', error);
       throw error;
     }
@@ -196,6 +208,7 @@ export class GaussianRenderer {
     if (index > -1) {
       this.scene.remove(splatMesh);
       this._splatMeshes.splice(index, 1);
+      // eslint-disable-next-line no-console
       console.log('🗑️ SplatMesh 已移除');
     }
   }
@@ -208,6 +221,7 @@ export class GaussianRenderer {
       this.scene.remove(mesh);
     });
     this._splatMeshes = [];
+    // eslint-disable-next-line no-console
     console.log('🗑️ 所有 SplatMesh 已清除');
   }
 
@@ -232,7 +246,7 @@ export class GaussianRenderer {
    * 注意: 如果使用 Three.js 标准渲染器，不需要调用此方法
    * @param {THREE.Camera} camera
    */
-  render(camera) {
+  render(_camera) {
     // Spark 的 SplatMesh 已经集成到 Three.js 渲染管线
     // 通常不需要额外的渲染调用
   }
@@ -244,6 +258,7 @@ export class GaussianRenderer {
     this.clearAll();
     this._spark = null;
     this._ready = false;
+    // eslint-disable-next-line no-console
     console.log('🗑️ GaussianRenderer 已销毁');
   }
 }

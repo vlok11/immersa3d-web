@@ -58,6 +58,7 @@ export class DepthAnythingEstimator {
     this._canvas = document.createElement('canvas');
     this._ctx = this._canvas.getContext('2d');
 
+    // eslint-disable-next-line no-console
     console.log(`📊 DepthAnythingEstimator 配置: ${precision} (${this._config.size}MB)`);
   }
 
@@ -67,6 +68,7 @@ export class DepthAnythingEstimator {
    */
   async init() {
     try {
+      // eslint-disable-next-line no-console
       console.log(`🔄 正在加载 Depth Anything V2 模型 (${this._config.size}MB)...`);
       const startTime = performance.now();
 
@@ -83,8 +85,10 @@ export class DepthAnythingEstimator {
 
       this._ready = true;
       const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+      // eslint-disable-next-line no-console
       console.log(`✅ Depth Anything V2 初始化完成 (${elapsed}s)`);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('❌ Depth Anything V2 初始化失败:', error);
       throw error;
     }
@@ -108,6 +112,7 @@ export class DepthAnythingEstimator {
       throw new Error('DepthAnythingEstimator 未初始化');
     }
 
+    // eslint-disable-next-line no-console
     console.log('🔍 开始 Depth Anything V2 深度估计...');
     const startTime = performance.now();
 
@@ -121,6 +126,7 @@ export class DepthAnythingEstimator {
     const depthMap = this._postprocessOutput(results);
 
     const elapsed = performance.now() - startTime;
+    // eslint-disable-next-line no-console
     console.log(`✅ Depth Anything V2 深度估计完成 (${elapsed.toFixed(2)}ms)`);
 
     return depthMap;
@@ -261,6 +267,7 @@ export class DepthAnythingEstimator {
       this._session = null;
     }
     this._ready = false;
+    // eslint-disable-next-line no-console
     console.log('🗑️ DepthAnythingEstimator 已销毁');
   }
 }
