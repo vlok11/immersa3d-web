@@ -1,8 +1,50 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import glsl from 'vite-plugin-glsl';
+import { imagetools } from 'vite-imagetools';
+import { comlink } from 'vite-plugin-comlink';
+import compression from 'vite-plugin-compression';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
   plugins: [
+    // GLSL Shader 支持 (Three.js)
+    glsl(),
+
+    // 图片优化 (WebP/AVIF 转换)
+    imagetools({
+      defaultDirectives: (url) => {
+        if (url.searchParams.has('texture')) {
+          return new URLSearchParams({
+            format: 'webp',
+            quality: '85',
+            width: '1024',
+          });
+        }
+        return new URLSearchParams();
+      },
+    }),
+
+    // Web Worker 支持 (AI 推理)
+    comlink(),
+
+    // Brotli 压缩 (WASM/模型文件优化)
+    compression({
+      algorithm: 'brotliCompress',
+      ext: '.br',
+      threshold: 1024, // 只压缩 > 1KB 的文件
+      deleteOriginFile: false,
+    }),
+
+    // Bundle 分析
+    visualizer({
+      open: false, // 构建后不自动打开
+      gzipSize: true,
+      brotliSize: true,
+      filename: 'reports/bundle-stats.html',
+    }),
+
+    // PWA 配置
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
