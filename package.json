@@ -1,0 +1,39 @@
+{
+  "name": "immersa3d-web",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AI驱动3D内容创作工具 - 浏览器端",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "three": "^0.170.0",
+    "@ffmpeg/ffmpeg": "^0.12.0",
+    "@ffmpeg/util": "^0.12.0",
+    "onnxruntime-web": "^1.20.0",
+    "@tensorflow/tfjs": "^4.22.0",
+    "gsap": "^3.12.0",
+    "comlink": "^4.4.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0",
+    "vite-plugin-pwa": "^0.21.0",
+    "workbox-window": "^7.3.0",
+    "vitest": "^2.0.0",
+    "@playwright/test": "^1.47.0"
+  },
+  "keywords": [
+    "3d",
+    "ai",
+    "threejs",
+    "depth-estimation",
+    "webgl",
+    "webgpu"
+  ],
+  "author": "",
+  "license": "MIT"
+}

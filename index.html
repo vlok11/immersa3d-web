@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Immersa 3D - AI驱动3D内容创作工具，将2D图像/视频智能转换为沉浸式3D体验"
+    />
+    <meta name="theme-color" content="#1a1a2e" />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>Immersa 3D - AI驱动3D内容创作工具</title>
+    <link rel="stylesheet" href="/src/index.css" />
+  </head>
+  <body>
+    <!-- 应用容器 -->
+    <div id="app">
+      <!-- 加载界面 -->
+      <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+          <div class="loading-logo">
+            <span class="logo-icon">🎨</span>
+            <span class="logo-text">Immersa 3D</span>
+          </div>
+          <div class="loading-spinner"></div>
+          <p class="loading-text">正在初始化...</p>
+        </div>
+      </div>
+
+      <!-- 主界面 -->
+      <main id="main-app" class="main-app" style="display: none">
+        <!-- 顶部导航栏 -->
+        <header class="navbar">
+          <div class="navbar__logo">
+            <span class="logo-icon">🎨</span>
+            <span class="logo-text">Immersa 3D</span>
+          </div>
+          <nav class="navbar__menu">
+            <button class="navbar__btn" data-action="new">新建</button>
+            <button class="navbar__btn" data-action="open">打开</button>
+            <button class="navbar__btn" data-action="save">保存</button>
+            <button class="navbar__btn" data-action="export">导出</button>
+          </nav>
+          <div class="navbar__actions">
+            <button
+              class="navbar__btn navbar__btn--icon"
+              data-action="settings"
+              title="设置"
+            >
+              ⚙️
+            </button>
+            <button
+              class="navbar__btn navbar__btn--icon"
+              data-action="help"
+              title="帮助"
+            >
+              ❓
+            </button>
+          </div>
+        </header>
+
+        <!-- 主内容区 -->
+        <div class="workspace">
+          <!-- 左侧边栏 -->
+          <aside class="sidebar sidebar--left">
+            <div class="sidebar__section">
+              <h3 class="sidebar__title">项目</h3>
+              <div class="sidebar__content" id="project-panel">
+                <div class="upload-zone" id="upload-zone">
+                  <div class="upload-zone__icon">📁</div>
+                  <p class="upload-zone__text">拖放图片/视频到此处</p>
+                  <p class="upload-zone__hint">或点击选择文件</p>
+                  <input
+                    type="file"
+                    id="file-input"
+                    accept="image/*,video/*"
+                    hidden
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="sidebar__section">
+              <h3 class="sidebar__title">图层</h3>
+              <div class="sidebar__content" id="layers-panel">
+                <p class="empty-hint">暂无图层</p>
+              </div>
+            </div>
+          </aside>
+
+          <!-- 3D 预览区 -->
+          <section class="viewport">
+            <div class="viewport__toolbar">
+              <div class="toolbar-group">
+                <button
+                  class="toolbar__btn toolbar__btn--active"
+                  data-tool="select"
+                  title="选择"
+                >
+                  🖱️
+                </button>
+                <button class="toolbar__btn" data-tool="move" title="移动">
+                  ✋
+                </button>
+                <button class="toolbar__btn" data-tool="rotate" title="旋转">
+                  🔄
+                </button>
+                <button class="toolbar__btn" data-tool="scale" title="缩放">
+                  🔍
+                </button>
+              </div>
+              <div class="toolbar-group">
+                <button
+                  class="toolbar__btn"
+                  data-action="reset-view"
+                  title="重置视图"
+                >
+                  🏠
+                </button>
+                <button
+                  class="toolbar__btn"
+                  data-action="fullscreen"
+                  title="全屏"
+                >
+                  ⛶
+                </button>
+              </div>
+            </div>
+
+            <!-- Three.js 画布容器 -->
+            <div class="viewport__canvas" id="viewport-canvas">
+              <div class="viewport__placeholder">
+                <p>请上传图片或视频开始创作</p>
+              </div>
+            </div>
+
+            <!-- 时间轴编辑器 -->
+            <div class="timeline-container">
+              <timeline-editor id="timeline-editor"></timeline-editor>
+            </div>
+          </section>
+
+          <!-- 右侧属性面板 -->
+          <aside class="sidebar sidebar--right">
+            <div class="sidebar__section">
+              <h3 class="sidebar__title">属性</h3>
+              <div class="sidebar__content">
+                <property-panel id="main-properties"></property-panel>
+              </div>
+            </div>
+
+
+          </aside>
+        </div>
+
+        <!-- 底部状态栏 -->
+        <footer class="statusbar">
+          <span class="statusbar__item" id="status-fps">60 FPS</span>
+          <span class="statusbar__item" id="status-resolution"
+            >1920 × 1080</span
+          >
+          <span class="statusbar__item" id="status-backend">WebGL 2.0</span>
+          <span
+            class="statusbar__item statusbar__item--right"
+            id="status-message"
+            >就绪</span
+          >
+        </footer>
+      </main>
+    </div>
+
+    <!-- 模态框容器 -->
+    <div id="modal-container"></div>
+
+    <!-- Toast 消息容器 -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script type="module" src="/src/components/index.js"></script>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
