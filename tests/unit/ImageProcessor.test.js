@@ -64,12 +64,6 @@ describe('ImageProcessor', () => {
         imageSmoothingQuality: 'high',
       };
 
-      const mockCanvas = {
-        width: 0,
-        height: 0,
-        getContext: vi.fn(() => mockCtx),
-      };
-
       vi.spyOn(document, 'createElement').mockImplementation((tag) => {
         if (tag === 'canvas') {
           return {

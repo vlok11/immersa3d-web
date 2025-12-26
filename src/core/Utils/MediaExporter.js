@@ -186,7 +186,7 @@ export class MediaExporter {
    * @param {object} options
    * @returns {Promise<Blob>}
    */
-  async exportGIF(options = {}) {
+  async exportGIF(_options = {}) {
     // const { fps, quality, width, height } = options;
 
     const frames = this._frames;

@@ -206,13 +206,12 @@ export class CameraAnimator {
         this._createRollAnimation(duration, easing, options);
         break;
       default:
-        // eslint-disable-next-line no-console
         console.warn(`未知动画类型: ${type}`);
         return;
     }
 
     this.isPlaying = true;
-    // eslint-disable-next-line no-console
+
     console.log(`🎬 播放动画: ${type}`);
   }
 

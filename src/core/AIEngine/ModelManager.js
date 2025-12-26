@@ -72,7 +72,7 @@ export class ModelManager {
           console.log('🚀 WebGPU 可用');
           return 'webgpu';
         }
-      } catch (e) {
+      } catch (_e) {
         // WebGPU 不可用
       }
     }

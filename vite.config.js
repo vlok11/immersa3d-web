@@ -3,7 +3,6 @@ import { VitePWA } from 'vite-plugin-pwa';
 import glsl from 'vite-plugin-glsl';
 import { imagetools } from 'vite-imagetools';
 import { comlink } from 'vite-plugin-comlink';
-import compression from 'vite-plugin-compression';
 import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
@@ -45,12 +44,14 @@ export default defineConfig({
     comlink(),
 
     // Brotli 压缩 (WASM/模型文件优化)
-    compression({
-      algorithm: 'brotliCompress',
-      ext: '.br',
-      threshold: 1024, // 只压缩 > 1KB 的文件
-      deleteOriginFile: false,
-    }),
+    // Brotli 压缩 (WASM/模型文件优化)
+    // Brotli 压缩 (WASM/模型文件优化)
+    // compression({
+    //   algorithm: 'brotliCompress',
+    //   ext: '.br',
+    //   threshold: 1024, // 只压缩 > 1KB 的文件
+    //   deleteOriginFile: false,
+    // }),
 
     // Bundle 分析
     visualizer({

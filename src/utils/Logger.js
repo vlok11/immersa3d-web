@@ -49,7 +49,6 @@ export class Logger {
    */
   static debug(message, ...args) {
     if (this._level <= LogLevel.DEBUG) {
-      // eslint-disable-next-line no-console
       console.debug(`[DEBUG] ${message}`, ...args);
     }
   }
@@ -61,7 +60,6 @@ export class Logger {
    */
   static info(message, ...args) {
     if (this._level <= LogLevel.INFO) {
-      // eslint-disable-next-line no-console
       console.info(`ℹ️ ${message}`, ...args);
     }
   }
@@ -73,7 +71,6 @@ export class Logger {
    */
   static log(message, ...args) {
     if (this._level <= LogLevel.INFO) {
-      // eslint-disable-next-line no-console
       console.log(message, ...args);
     }
   }
@@ -85,7 +82,6 @@ export class Logger {
    */
   static warn(message, ...args) {
     if (this._level <= LogLevel.WARN) {
-      // eslint-disable-next-line no-console
       console.warn(`⚠️ ${message}`, ...args);
     }
   }
@@ -97,7 +93,6 @@ export class Logger {
    */
   static error(message, ...args) {
     if (this._level <= LogLevel.ERROR) {
-      // eslint-disable-next-line no-console
       console.error(`❌ ${message}`, ...args);
     }
   }
@@ -108,7 +103,6 @@ export class Logger {
    */
   static group(label) {
     if (this._level < LogLevel.NONE) {
-      // eslint-disable-next-line no-console
       console.group(label);
     }
   }
@@ -118,7 +112,6 @@ export class Logger {
    */
   static groupEnd() {
     if (this._level < LogLevel.NONE) {
-      // eslint-disable-next-line no-console
       console.groupEnd();
     }
   }

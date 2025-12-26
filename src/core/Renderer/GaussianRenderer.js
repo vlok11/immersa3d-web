@@ -51,7 +51,6 @@ export class GaussianRenderer {
    */
   async init() {
     try {
-      // eslint-disable-next-line no-console
       console.log('🔄 正在初始化 GaussianRenderer...');
 
       // 动态导入 Spark
@@ -59,10 +58,9 @@ export class GaussianRenderer {
       this._spark = spark;
 
       this._ready = true;
-      // eslint-disable-next-line no-console
+
       console.log('✅ GaussianRenderer 初始化完成');
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('❌ GaussianRenderer 初始化失败:', error);
       throw error;
     }
@@ -93,7 +91,7 @@ export class GaussianRenderer {
     this._splatMeshes.forEach((mesh) => {
       mesh.visible = enabled;
     });
-    // eslint-disable-next-line no-console
+
     console.log(`🎮 GaussianRenderer ${enabled ? '已启用' : '已禁用'}`);
   }
 
@@ -108,7 +106,6 @@ export class GaussianRenderer {
       throw new Error('GaussianRenderer 未初始化');
     }
 
-    // eslint-disable-next-line no-console
     console.log(`🔄 正在加载 3DGS 文件: ${url}`);
     const startTime = performance.now();
 
@@ -148,12 +145,11 @@ export class GaussianRenderer {
       this._splatMeshes.push(splatMesh);
 
       const elapsed = performance.now() - startTime;
-      // eslint-disable-next-line no-console
+
       console.log(`✅ 3DGS 文件加载完成 (${elapsed.toFixed(2)}ms)`);
 
       return splatMesh;
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('❌ 3DGS 文件加载失败:', error);
       throw error;
     }
@@ -171,7 +167,6 @@ export class GaussianRenderer {
       throw new Error('GaussianRenderer 未初始化');
     }
 
-    // eslint-disable-next-line no-console
     console.log(`🔄 正在从 Buffer 加载 3DGS (${fileType})...`);
 
     try {
@@ -189,11 +184,9 @@ export class GaussianRenderer {
       this.scene.add(splatMesh);
       this._splatMeshes.push(splatMesh);
 
-      // eslint-disable-next-line no-console
       console.log('✅ 3DGS Buffer 加载完成');
       return splatMesh;
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('❌ 3DGS Buffer 加载失败:', error);
       throw error;
     }
@@ -208,7 +201,7 @@ export class GaussianRenderer {
     if (index > -1) {
       this.scene.remove(splatMesh);
       this._splatMeshes.splice(index, 1);
-      // eslint-disable-next-line no-console
+
       console.log('🗑️ SplatMesh 已移除');
     }
   }
@@ -221,7 +214,7 @@ export class GaussianRenderer {
       this.scene.remove(mesh);
     });
     this._splatMeshes = [];
-    // eslint-disable-next-line no-console
+
     console.log('🗑️ 所有 SplatMesh 已清除');
   }
 
@@ -258,7 +251,7 @@ export class GaussianRenderer {
     this.clearAll();
     this._spark = null;
     this._ready = false;
-    // eslint-disable-next-line no-console
+
     console.log('🗑️ GaussianRenderer 已销毁');
   }
 }

@@ -3,7 +3,8 @@
  * @module modules/PostProcessing
  */
 
-export { EffectsManager, VignetteShader, ColorCorrectionShader } from './EffectsManager.js';
+// EffectsManager has been deprecated and removed.
+// export { EffectsManager, VignetteShader, ColorCorrectionShader } from './EffectsManager.js';
 export { LUTManager, LUTPreset } from './LUTManager.js';
 export {
   EffectsStack,

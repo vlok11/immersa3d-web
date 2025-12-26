@@ -5,6 +5,8 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { renderLoop } from '../RenderLoop.js';
+import Logger from '../../utils/Logger.js';
 
 /**
  * Three.js 场景管理器
@@ -33,26 +35,28 @@ export class SceneManager {
     /** @type {Array} */
     this._disposables = [];
 
-    /** @type {number} */
-    this._animationId = null;
-
-    /** @type {boolean} */
-    this._isRunning = false;
-
     /** @type {Function[]} */
     this._updateCallbacks = [];
 
-    /** @private */
-    this._clock = new THREE.Clock();
-
-    /** @private */
-    this._stats = {
-      fps: 0,
-      frameCount: 0,
-      lastTime: performance.now(),
-    };
+    this.raycaster = new THREE.Raycaster();
 
     this._init();
+  }
+
+  /**
+   * 获取鼠标位置的物体
+   * @param {object} mouse {x, y} normalized device coordinates
+   * @returns {THREE.Object3D|null}
+   */
+  getHitObject(mouse) {
+    if (!this.camera || !this.scene) return null;
+
+    this.raycaster.setFromCamera(mouse, this.camera);
+    const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+
+    // Filter out helper objects if needed (e.g., GridHelper)
+    // For now return first hit
+    return intersects.length > 0 ? intersects[0].object : null;
   }
 
   /**
@@ -67,7 +71,11 @@ export class SceneManager {
     this._setupEnvironment();
     this._setupEventListeners();
 
-    console.log('✅ SceneManager 初始化完成');
+    // 绑定渲染循环
+    this._renderBound = this._render.bind(this);
+    renderLoop.add(this._renderBound);
+
+    Logger.log('✅ SceneManager 初始化完成');
   }
 
   /**
@@ -116,11 +124,74 @@ export class SceneManager {
   _setupControls() {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
-    this.controls.dampingFactor = 0.05;
+    this.controls.dampingFactor = 0.05; // Default smooth
+    this.controls.rotateSpeed = 0.5;
     this.controls.screenSpacePanning = true;
     this.controls.minDistance = 1;
     this.controls.maxDistance = 100;
     this.controls.maxPolarAngle = Math.PI;
+  }
+
+  /**
+   * 更新控制器参数
+   * @param {object} params - 控制参数
+   * @param {number} [params.dampingFactor] - 阻尼系数
+   * @param {number} [params.rotateSpeed] - 旋转速度
+   * @param {boolean} [params.autoRotate] - 是否自动旋转
+   * @param {number} [params.autoRotateSpeed] - 自动旋转速度
+   */
+  setControlParams(params) {
+    if (!this.controls) return;
+
+    if (params.dampingFactor !== undefined) {
+      this.controls.dampingFactor = params.dampingFactor;
+    }
+    if (params.rotateSpeed !== undefined) {
+      this.controls.rotateSpeed = params.rotateSpeed;
+    }
+    if (params.autoRotate !== undefined) {
+      this.controls.autoRotate = params.autoRotate;
+    }
+    if (params.autoRotateSpeed !== undefined) {
+      this.controls.autoRotateSpeed = params.autoRotateSpeed;
+    }
+  }
+
+  /**
+   * 聚焦到指定物体
+   * @param {THREE.Object3D} object - 目标物体
+   * @param {number} [duration=1.0] - 动画时长(秒)
+   * @returns {{center: THREE.Vector3, distance: number}|undefined} 目标位置和距离
+   */
+  focusOnObject(object) {
+    if (!object || !this.controls) return;
+
+    // 计算包围盒
+    const box = new THREE.Box3().setFromObject(object);
+    if (box.isEmpty()) return;
+
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+
+    // 简单的聚焦逻辑：将控制器目标移动到物体中心，并拉近/拉远相机
+    // 注意：更平滑的动画建议在 CameraAnimator 中实现，这里只做基础的目标点设置
+    // 为了平滑过渡，我们只需更新 controls.target，OrbitControls 会处理一部分，
+    // 但完全平滑的移动通常需要 TWEEN 或自定义动画。
+    // 鉴于 P2 任务是"双击聚焦"，我们可以简单地设置 target 并让 controls 更新
+
+    // 如果需要平滑动画，我们可以暂且直接设置，后续在 CameraAnimator 完善
+    this.controls.target.copy(center);
+
+    // 调整相机距离
+    const fov = this.camera.fov * (Math.PI / 180);
+    const cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 1.5; // 1.5倍余量
+
+    // 这里简单地移动相机，实际生产中应使用 CameraAnimator.flyTo
+    // this.camera.position.set(center.x, center.y, center.z + cameraZ);
+    // this.controls.update();
+
+    return { center, distance: cameraZ }; // 返回目标数据供外部动画使用
   }
 
   /**
@@ -134,13 +205,13 @@ export class SceneManager {
 
     // 主光源
     const mainLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    this.scene.add(mainLight);
     mainLight.position.set(5, 10, 5);
     mainLight.castShadow = true;
     mainLight.shadow.mapSize.width = 2048;
     mainLight.shadow.mapSize.height = 2048;
     mainLight.shadow.camera.near = 0.5;
     mainLight.shadow.camera.far = 50;
-    this.scene.add(mainLight);
 
     // 填充光
     const fillLight = new THREE.DirectionalLight(0x8888ff, 0.3);
@@ -176,13 +247,18 @@ export class SceneManager {
    * @private
    */
   _onResize() {
+    if (!this.container) return;
     const width = this.container.clientWidth;
     const height = this.container.clientHeight;
 
-    this.camera.aspect = width / height;
-    this.camera.updateProjectionMatrix();
+    if (this.camera) {
+      this.camera.aspect = width / height;
+      this.camera.updateProjectionMatrix();
+    }
 
-    this.renderer.setSize(width, height);
+    if (this.renderer) {
+      this.renderer.setSize(width, height);
+    }
   }
 
   /**
@@ -205,78 +281,63 @@ export class SceneManager {
   }
 
   /**
+   * 设置自定义渲染处理函数
+   * @param {Function} handler (delta, elapsed) => void
+   */
+  setRenderHandler(handler) {
+    this._renderHandler = handler;
+  }
+
+  /**
    * 开始渲染循环
    */
   start() {
-    if (this._isRunning) return;
-
-    this._isRunning = true;
-    this._clock.start();
-    this._animate();
-
-    console.log('▶️ 渲染循环已启动');
+    renderLoop.start();
   }
 
   /**
    * 停止渲染循环
    */
   stop() {
-    this._isRunning = false;
-    this._clock.stop();
-
-    if (this._animationId) {
-      cancelAnimationFrame(this._animationId);
-      this._animationId = null;
-    }
-
-    console.log('⏹️ 渲染循环已停止');
+    renderLoop.stop();
   }
 
   /**
-   * 渲染循环
+   * 每帧渲染逻辑
    * @private
+   * @param {number} delta
+   * @param {number} elapsed
    */
-  _animate() {
-    if (!this._isRunning) return;
-
-    this._animationId = requestAnimationFrame(this._animate.bind(this));
-
-    const delta = this._clock.getDelta();
-    const elapsed = this._clock.getElapsedTime();
+  _render(delta, elapsed) {
+    if (!this.renderer || !this.scene || !this.camera) return;
 
     // 更新控制器
     this.controls.update();
 
-    // 调用更新回调
+    // 调用额外更新回调
     for (const callback of this._updateCallbacks) {
       callback(delta, elapsed);
     }
 
     // 渲染场景
-    this.renderer.render(this.scene, this.camera);
+    if (this._renderHandler) {
+      this._renderHandler(delta, elapsed);
+    } else {
+      this.renderer.render(this.scene, this.camera);
+    }
 
-    // 更新 FPS 统计
-    this._updateStats();
+    // 更新 FPS 显示 (此处仅更新 UI，实际统计在 RenderLoop 中)
+    this._updateFpsDisplay();
   }
 
   /**
-   * 更新统计信息
+   * 更新 FPS UI
    * @private
    */
-  _updateStats() {
-    this._stats.frameCount++;
-    const now = performance.now();
-
-    if (now - this._stats.lastTime >= 1000) {
-      this._stats.fps = Math.round((this._stats.frameCount * 1000) / (now - this._stats.lastTime));
-      this._stats.frameCount = 0;
-      this._stats.lastTime = now;
-
-      // 更新状态栏 FPS
-      const fpsElement = document.getElementById('status-fps');
-      if (fpsElement) {
-        fpsElement.textContent = `${this._stats.fps} FPS`;
-      }
+  _updateFpsDisplay() {
+    const fpsElement = document.getElementById('status-fps');
+    if (fpsElement) {
+      fpsElement.textContent = `${renderLoop.fps} FPS`;
     }
   }
 
@@ -310,7 +371,7 @@ export class SceneManager {
    * @returns {number}
    */
   getFPS() {
-    return this._stats.fps;
+    return renderLoop.fps;
   }
 
   /**
@@ -333,6 +394,7 @@ export class SceneManager {
    * 销毁场景管理器
    */
   dispose() {
+    renderLoop.remove(this._renderBound);
     this.stop();
 
     // 移除事件监听
@@ -359,7 +421,7 @@ export class SceneManager {
     // 清空场景
     this.scene.clear();
 
-    console.log('🗑️ SceneManager 已销毁');
+    Logger.log('🗑️ SceneManager 已销毁');
   }
 }
 

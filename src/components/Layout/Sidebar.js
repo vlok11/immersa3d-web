@@ -303,7 +303,7 @@ export class Sidebar extends BaseComponent {
     try {
       const width = parseInt(this.style.width) || this.defaultWidth;
       localStorage.setItem(this._storageKey, width.toString());
-    } catch (e) {
+    } catch (_e) {
       // localStorage 不可用
     }
   }
@@ -323,7 +323,7 @@ export class Sidebar extends BaseComponent {
       } else {
         this.style.width = `${this.defaultWidth}px`;
       }
-    } catch (e) {
+    } catch (_e) {
       this.style.width = `${this.defaultWidth}px`;
     }
   }
