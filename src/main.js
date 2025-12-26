@@ -15,7 +15,6 @@ import { StereoRenderer } from './modules/Effects3D/stereo/StereoRenderer.js';
 import { ParticleSystem } from './modules/AtmosphereSystem/ParticleSystem.js';
 import { SkyController } from './modules/AtmosphereSystem/SkyController.js';
 import { LightingManager } from './modules/AtmosphereSystem/LightingManager.js';
-import { FogController } from './modules/AtmosphereSystem/FogController.js';
 // import { ProjectPanel } from './components/Layout/ProjectPanel.js';
 // import { LayersPanel } from './components/Layout/LayersPanel.js';
 // import { ExportModal } from './components/Modals/ExportModal.js';
@@ -24,14 +23,6 @@ import { FogController } from './modules/AtmosphereSystem/FogController.js';
 import { CameraPath } from './modules/CameraSystem/CameraPath.js';
 import { errorHandler, keyboardShortcuts } from './core/Utils/index.js';
 import Logger from './utils/Logger.js';
-// 新增模块导入
-import VideoProcessor from './modules/InputSystem/VideoProcessor.js';
-import SuperResolution, { UpscaleMethod } from './modules/EnhancementSystem/SuperResolution.js';
-import FrameInterpolation from './modules/EnhancementSystem/FrameInterpolation.js';
-import LUTManager from './modules/PostProcessing/LUTManager.js';
-import { MaterialEditor } from './modules/GeometrySystem/MaterialEditor.js';
-import { TextureManager } from './modules/GeometrySystem/TextureManager.js';
-import { ParallaxManager } from './modules/Effects3D/stereo/ParallaxManager.js';
 // import * as THREE from 'three';
 
 // 注册全局错误处理
@@ -105,37 +96,7 @@ class App {
 
     /** @type {CameraPath|null} */
     this.cameraPath = null;
-
-    // 新增模块属性
-    /** @type {VideoProcessor|null} */
-    this.videoProcessor = null;
-
-    /** @type {SuperResolution|null} */
-    this.superResolution = null;
-
-    /** @type {FrameInterpolation|null} */
-    this.frameInterpolation = null;
-
-    /** @type {LUTManager|null} */
-    this.lutManager = null;
-
-    /** @type {FogController|null} */
-    this.fogController = null;
-
-    /** @type {MaterialEditor|null} */
-    this.materialEditor = null;
-
-    /** @type {TextureManager|null} */
-    this.textureManager = null;
-
-    /** @type {ParallaxManager|null} */
-    this.parallaxManager = null;
-
-    /** @private AI 增强设置 */
-    this._upscaleMethod = UpscaleMethod.BICUBIC;
-    this._enableSuperResolution = false;
   }
-
 
   /**
    * 初始化应用
@@ -306,34 +267,6 @@ class App {
 
     this.cameraPath.setScene(this.sceneManager.scene);
 
-    // === 新增模块初始化 ===
-
-    // 创建视频处理器 (懒加载模式，不在启动时加载 FFmpeg)
-    this.videoProcessor = new VideoProcessor();
-
-    // 创建超分辨率处理器
-    this.superResolution = new SuperResolution();
-
-    // 创建帧插值处理器
-    this.frameInterpolation = new FrameInterpolation();
-
-    // 创建 LUT 管理器
-    this.lutManager = new LUTManager();
-
-    // 创建雾效控制器
-    this.fogController = new FogController(this.sceneManager.scene);
-
-    // 创建材质编辑器
-    this.materialEditor = new MaterialEditor();
-
-    // 创建纹理管理器
-    this.textureManager = new TextureManager();
-
-    // 创建视差管理器
-    this.parallaxManager = new ParallaxManager(this.sceneManager.camera);
-
-    // === 新增模块初始化结束 ===
-
     // 添加粒子更新到渲染循环
     this.sceneManager.addUpdateCallback((delta) => {
       if (this.particleSystem) {
@@ -345,7 +278,6 @@ class App {
     this.sceneManager.start();
 
     Logger.log('🎮 3D 渲染器初始化完成');
-
   }
 
   /**
@@ -479,7 +411,8 @@ class App {
     // 播放/暂停
     keyboardShortcuts.register(
       'Space',
-      (_) => {
+      (e) => {
+        // eslint-disable-line no-unused-vars
         const btn = document.querySelector('[data-action="play"]');
         if (btn) this._togglePlayback(!this.cameraAnimator?.isPlaying);
       },
@@ -684,128 +617,7 @@ class App {
       value: false,
       onChange: (val) => this._toggleEffect('colorgrade', val),
     });
-
-    // 6. 雾效设置
-    panel.addGroup('fog', '雾效设置');
-
-    panel.addControl('fog', {
-      type: 'select',
-      label: '雾效预设',
-      value: 'clear',
-      options: [
-        { label: '无', value: 'clear' },
-        { label: '薄雾', value: 'lightMist' },
-        { label: '晨雾', value: 'morningFog' },
-        { label: '浓雾', value: 'denseFog' },
-        { label: '霾', value: 'haze' },
-        { label: '水下', value: 'underwater' },
-        { label: '神秘', value: 'mystical' },
-      ],
-      onChange: (val) => this.fogController?.applyPreset(val),
-    });
-
-    panel.addControl('fog', {
-      type: 'slider',
-      label: '雾密度',
-      value: 0.02,
-      min: 0,
-      max: 0.1,
-      step: 0.001,
-      onChange: (val) => this.fogController?.setDensity(val),
-    });
-
-    // 7. LUT 色彩
-    panel.addGroup('lut', 'LUT 色彩');
-
-    panel.addControl('lut', {
-      type: 'select',
-      label: 'LUT 预设',
-      value: 'none',
-      options: [
-        { label: '无', value: 'none' },
-        { label: '电影感', value: 'cinematic' },
-        { label: '复古', value: 'vintage' },
-        { label: '暖色调', value: 'warm' },
-        { label: '冷色调', value: 'cool' },
-        { label: '棕褐色', value: 'sepia' },
-        { label: '黑白', value: 'noir' },
-        { label: '鲜艳', value: 'vibrant' },
-        { label: '柔和', value: 'muted' },
-        { label: '青橙', value: 'tealOrange' },
-      ],
-      onChange: (val) => this.lutManager?.setCurrentLUT(val),
-    });
-
-    panel.addControl('lut', {
-      type: 'slider',
-      label: 'LUT 强度',
-      value: 1.0,
-      min: 0,
-      max: 1,
-      step: 0.05,
-      onChange: (val) => this.lutManager?.setIntensity(val),
-    });
-
-    // 8. 材质设置
-    panel.addGroup('material', '材质设置');
-
-    panel.addControl('material', {
-      type: 'select',
-      label: '材质类型',
-      value: 'standard',
-      options: [
-        { label: '标准', value: 'standard' },
-        { label: '物理', value: 'physical' },
-        { label: '基础', value: 'basic' },
-        { label: 'Phong', value: 'phong' },
-        { label: '卡通', value: 'toon' },
-      ],
-      onChange: (val) => this._updateMaterialType(val),
-    });
-
-    panel.addControl('material', {
-      type: 'slider',
-      label: '粗糙度',
-      value: 0.5,
-      min: 0,
-      max: 1,
-      step: 0.05,
-      onChange: (val) => this.materialEditor?.setRoughness(val),
-    });
-
-    panel.addControl('material', {
-      type: 'slider',
-      label: '金属度',
-      value: 0,
-      min: 0,
-      max: 1,
-      step: 0.05,
-      onChange: (val) => this.materialEditor?.setMetalness(val),
-    });
-
-    // 9. AI 增强
-    panel.addGroup('enhancement', 'AI 增强');
-
-    panel.addControl('enhancement', {
-      type: 'select',
-      label: '超分方法',
-      value: 'bicubic',
-      options: [
-        { label: '双三次插值', value: 'bicubic' },
-        { label: 'Lanczos', value: 'lanczos' },
-        { label: 'AI (SRCNN)', value: 'srcnn' },
-      ],
-      onChange: (val) => (this._upscaleMethod = val),
-    });
-
-    panel.addControl('enhancement', {
-      type: 'checkbox',
-      label: '启用超分辨率',
-      value: false,
-      onChange: (val) => (this._enableSuperResolution = val),
-    });
   }
-
 
   /**
    * 设置时间轴
@@ -1016,29 +828,6 @@ class App {
     Logger.log(`🔧 切换工具: ${tool}`);
     this._updateStatus(`工具: ${tool}`);
   }
-
-  /**
-   * 更新材质类型
-   * @private
-   * @param {string} type - 材质类型
-   */
-  _updateMaterialType(type) {
-    if (!this.materialEditor || !this.currentMesh) {
-      Logger.warn('无法更新材质：未选中物体或材质编辑器未初始化');
-      return;
-    }
-
-    try {
-      const newMaterial = this.materialEditor.createMaterial(type);
-      this.materialEditor.setTarget(this.currentMesh);
-      this.materialEditor.applyMaterial(newMaterial);
-      Logger.log(`🎨 材质类型已更新: ${type}`);
-    } catch (error) {
-      Logger.error('更新材质失败:', error);
-      this._showToast('更新材质失败', 'error');
-    }
-  }
-
 
   /**
    * 处理文件上传

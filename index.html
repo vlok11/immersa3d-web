@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
@@ -53,7 +53,7 @@
             <sidebar-section title="项目">
               <project-panel id="project-panel"></project-panel>
             </sidebar-section>
-            
+
             <sidebar-section title="图层">
               <layers-panel id="layers-panel"></layers-panel>
             </sidebar-section>
@@ -63,38 +63,16 @@
           <section class="viewport">
             <div class="viewport__toolbar">
               <div class="toolbar-group">
-                <button
-                  class="toolbar__btn toolbar__btn--active"
-                  data-tool="select"
-                  title="选择"
-                >
+                <button class="toolbar__btn toolbar__btn--active" data-tool="select" title="选择">
                   🖱️
                 </button>
-                <button class="toolbar__btn" data-tool="move" title="移动">
-                  ✋
-                </button>
-                <button class="toolbar__btn" data-tool="rotate" title="旋转">
-                  🔄
-                </button>
-                <button class="toolbar__btn" data-tool="scale" title="缩放">
-                  🔍
-                </button>
+                <button class="toolbar__btn" data-tool="move" title="移动">✋</button>
+                <button class="toolbar__btn" data-tool="rotate" title="旋转">🔄</button>
+                <button class="toolbar__btn" data-tool="scale" title="缩放">🔍</button>
               </div>
               <div class="toolbar-group">
-                <button
-                  class="toolbar__btn"
-                  data-action="reset-view"
-                  title="重置视图"
-                >
-                  🏠
-                </button>
-                <button
-                  class="toolbar__btn"
-                  data-action="fullscreen"
-                  title="全屏"
-                >
-                  ⛶
-                </button>
+                <button class="toolbar__btn" data-action="reset-view" title="重置视图">🏠</button>
+                <button class="toolbar__btn" data-action="fullscreen" title="全屏">⛶</button>
               </div>
             </div>
 
@@ -105,7 +83,7 @@
                 <div class="viewport__placeholder-text">开始您的 3D 创作</div>
                 <div class="viewport__placeholder-hint">
                   拖放图片/视频到此处，或点击下方按钮选择文件
-                  <br>
+                  <br />
                   支持格式：JPG, PNG, MP4, WEBM
                 </div>
                 <div class="viewport__placeholder-actions">
@@ -132,15 +110,9 @@
         <!-- 底部状态栏 -->
         <footer class="statusbar">
           <span class="statusbar__item" id="status-fps">60 FPS</span>
-          <span class="statusbar__item" id="status-resolution"
-            >1920 × 1080</span
-          >
+          <span class="statusbar__item" id="status-resolution">1920 × 1080</span>
           <span class="statusbar__item" id="status-backend">WebGL 2.0</span>
-          <span
-            class="statusbar__item statusbar__item--right"
-            id="status-message"
-            >就绪</span
-          >
+          <span class="statusbar__item statusbar__item--right" id="status-message">就绪</span>
         </footer>
       </main>
     </div>
