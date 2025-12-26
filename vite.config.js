@@ -7,6 +7,22 @@ import compression from 'vite-plugin-compression';
 import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
+  // 全局常量定义
+  define: {
+    __APP_VERSION__: JSON.stringify('1.0.0'),
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
+
+  // 路径别名
+  resolve: {
+    alias: {
+      '@': '/src',
+      '@components': '/src/components',
+      '@modules': '/src/modules',
+      '@core': '/src/core',
+    },
+  },
+
   plugins: [
     // GLSL Shader 支持 (Three.js)
     glsl(),
@@ -115,6 +131,8 @@ export default defineConfig({
     target: 'esnext',
     minify: 'esbuild',
     sourcemap: false,
+    assetsInlineLimit: 8192, // 8 KB - 小资源内联优化
+    chunkSizeWarningLimit: 1000, // 1 MB - 消除大 chunk 警告
     rollupOptions: {
       output: {
         manualChunks: {
