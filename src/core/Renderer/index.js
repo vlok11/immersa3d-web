@@ -4,3 +4,4 @@
  */
 
 export { SceneManager } from './SceneManager.js';
+export { GaussianRenderer } from './GaussianRenderer.js';
