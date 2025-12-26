@@ -5,6 +5,7 @@
 
 import './index.css';
 import { SceneManager } from './core/Renderer/SceneManager.js';
+import { GaussianRenderer } from './core/Renderer/GaussianRenderer.js';
 import { ImageProcessor } from './modules/InputSystem/ImageProcessor.js';
 import { MeshGenerator } from './modules/GeometrySystem/MeshGenerator.js';
 import { ProjectionManager } from './modules/ProjectionSystem/ProjectionManager.js';
@@ -15,6 +16,7 @@ import { StereoRenderer } from './modules/Effects3D/stereo/StereoRenderer.js';
 import { ParticleSystem } from './modules/AtmosphereSystem/ParticleSystem.js';
 import { SkyController } from './modules/AtmosphereSystem/SkyController.js';
 import { LightingManager } from './modules/AtmosphereSystem/LightingManager.js';
+import { DepthAnythingEstimator } from './core/AIEngine/DepthAnythingEstimator.js';
 // import { ProjectPanel } from './components/Layout/ProjectPanel.js';
 // import { LayersPanel } from './components/Layout/LayersPanel.js';
 // import { ExportModal } from './components/Modals/ExportModal.js';
@@ -96,6 +98,18 @@ class App {
 
     /** @type {CameraPath|null} */
     this.cameraPath = null;
+
+    /** @type {DepthAnythingEstimator|null} */
+    this.depthEstimator = null;
+
+    /** @type {GaussianRenderer|null} */
+    this.gaussianRenderer = null;
+
+    /** @type {boolean} 是否使用 AI 深度估计 */
+    this.useAIDepth = true;
+
+    /** @type {boolean} AI 深度模型是否就绪 */
+    this._aiDepthReady = false;
   }
 
   /**
@@ -205,7 +219,40 @@ class App {
     // 初始化网格生成器
     this.meshGenerator = new MeshGenerator();
 
+    // 异步初始化 Depth Anything V2（不阻塞主流程）
+    this._initDepthEstimator();
+
     Logger.log('📦 核心模块加载完成');
+  }
+
+  /**
+   * 初始化 AI 深度估计器（异步，后台加载）
+   * @private
+   */
+  async _initDepthEstimator() {
+    try {
+      this._updateStatus('正在加载 AI 深度模型 (97MB)...');
+      Logger.log('🔄 开始加载 Depth Anything V2 模型...');
+
+      this.depthEstimator = new DepthAnythingEstimator({ precision: 'full' });
+      await this.depthEstimator.init();
+
+      this._aiDepthReady = true;
+      this._updateStatus('AI 深度模型就绪');
+      this._showToast('AI 深度模型加载完成', 'success');
+      Logger.log('✅ Depth Anything V2 模型加载完成');
+
+      // 更新状态栏
+      const modelStatus = document.getElementById('status-ai-model');
+      if (modelStatus) {
+        modelStatus.textContent = 'Depth Anything V2';
+        modelStatus.style.color = 'var(--color-success)';
+      }
+    } catch (error) {
+      Logger.error('❌ AI 深度模型加载失败:', error);
+      this._showToast('AI 模型加载失败，将使用模拟深度', 'warning');
+      this._aiDepthReady = false;
+    }
   }
 
   /**
@@ -838,9 +885,10 @@ class App {
 
     const isImage = file.type.startsWith('image/');
     const isVideo = file.type.startsWith('video/');
+    const isGaussianSplat = this._isGaussianSplatFile(file);
 
-    if (!isImage && !isVideo) {
-      this._showToast('请上传图片或视频文件', 'error');
+    if (!isImage && !isVideo && !isGaussianSplat) {
+      this._showToast('请上传图片、视频或 3DGS 文件 (.splat, .ply, .spz)', 'error');
       return;
     }
 
@@ -848,13 +896,17 @@ class App {
     this._updateStatus(`处理中: ${file.name}`);
 
     try {
-      if (isImage) {
+      if (isGaussianSplat) {
+        // 3DGS 文件处理
+        await this.loadGaussianSplat(file);
+        this._showToast('3DGS 场景加载完成！', 'success');
+      } else if (isImage) {
         await this._processImage(file);
+        this._showToast('3D 转换完成！', 'success');
       } else {
         await this._processVideo(file);
+        this._showToast('视频处理完成！', 'success');
       }
-
-      this._showToast('3D 转换完成！', 'success');
 
       // 更新图层列表
       const layersPanel = document.getElementById('layers-panel');
@@ -895,9 +947,42 @@ class App {
     const resizedCanvas = this.imageProcessor.resizeKeepAspect(image, maxSize);
     Logger.log(`📐 调整尺寸: ${resizedCanvas.width} × ${resizedCanvas.height}`);
 
-    // 3. 生成模拟深度图（真实场景中应使用 AI 模型）
+    // 3. 生成深度图（优先使用 AI，降级使用模拟）
     this._updateStatus('生成深度图...');
-    const depthData = this._generateSimulatedDepthMap(resizedCanvas);
+    let depthData;
+
+    if (this.useAIDepth && this._aiDepthReady && this.depthEstimator) {
+      // 使用 Depth Anything V2 AI 深度估计
+      try {
+        this._updateStatus('AI 深度估计中 (Depth Anything V2)...');
+        Logger.log('🤖 使用 Depth Anything V2 进行深度估计...');
+
+        depthData = await this.depthEstimator.estimate(resizedCanvas);
+
+        // 调整深度图尺寸以匹配图像
+        const depthSize = this.depthEstimator.getInputSize(); // 518
+        if (depthSize !== resizedCanvas.width || depthSize !== resizedCanvas.height) {
+          depthData = this._resizeDepthMap(
+            depthData,
+            depthSize,
+            depthSize,
+            resizedCanvas.width,
+            resizedCanvas.height
+          );
+        }
+
+        Logger.log('✅ AI 深度估计完成 (Depth Anything V2)');
+      } catch (error) {
+        Logger.warn('⚠️ AI 深度估计失败，降级使用模拟深度:', error);
+        depthData = this._generateSimulatedDepthMap(resizedCanvas);
+      }
+    } else {
+      // 使用模拟深度图
+      if (!this._aiDepthReady) {
+        Logger.log('⏳ AI 模型未就绪，使用模拟深度');
+      }
+      depthData = this._generateSimulatedDepthMap(resizedCanvas);
+    }
     Logger.log('🔍 深度图生成完成');
 
     // 4. 创建纹理
@@ -974,6 +1059,97 @@ class App {
     }
 
     return depthData;
+  }
+
+  /**
+   * 调整深度图尺寸
+   * @private
+   * @param {Float32Array} depthData - 原始深度数据
+   * @param {number} srcWidth - 源宽度
+   * @param {number} srcHeight - 源高度
+   * @param {number} dstWidth - 目标宽度
+   * @param {number} dstHeight - 目标高度
+   * @returns {Float32Array} 调整后的深度数据
+   */
+  _resizeDepthMap(depthData, srcWidth, srcHeight, dstWidth, dstHeight) {
+    const result = new Float32Array(dstWidth * dstHeight);
+    const xRatio = srcWidth / dstWidth;
+    const yRatio = srcHeight / dstHeight;
+
+    for (let y = 0; y < dstHeight; y++) {
+      for (let x = 0; x < dstWidth; x++) {
+        const srcX = Math.floor(x * xRatio);
+        const srcY = Math.floor(y * yRatio);
+        const srcIdx = srcY * srcWidth + srcX;
+        const dstIdx = y * dstWidth + x;
+        result[dstIdx] = depthData[srcIdx] || 0;
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * 加载 3D 高斯泼溅文件
+   * @param {File} file - 3DGS 文件 (.splat, .ply, .spz)
+   */
+  async loadGaussianSplat(file) {
+    if (!this.gaussianRenderer) {
+      // 延迟初始化 GaussianRenderer
+      if (!this.sceneManager) {
+        throw new Error('场景管理器未初始化');
+      }
+
+      this.gaussianRenderer = new GaussianRenderer(
+        this.sceneManager.renderer,
+        this.sceneManager.scene
+      );
+      await this.gaussianRenderer.init();
+      Logger.log('✅ GaussianRenderer 初始化完成');
+    }
+
+    this._updateStatus(`加载 3DGS 文件: ${file.name}...`);
+    Logger.log(`📦 加载 3DGS 文件: ${file.name}`);
+
+    try {
+      // 将 File 转换为 URL
+      const url = URL.createObjectURL(file);
+
+      // 加载 3DGS
+      const splatMesh = await this.gaussianRenderer.loadSplat(url, {
+        onProgress: (progress) => {
+          this._updateStatus(`加载 3DGS: ${Math.round(progress * 100)}%`);
+        },
+      });
+
+      // 清理临时 URL
+      URL.revokeObjectURL(url);
+
+      // 调整相机位置
+      this.sceneManager.camera.position.set(0, 0, 5);
+      this.sceneManager.camera.lookAt(0, 0, 0);
+      this.sceneManager.controls.update();
+
+      this._showToast('3DGS 文件加载完成！', 'success');
+      this._updateStatus('就绪');
+      Logger.log('✅ 3DGS 文件加载完成');
+
+      return splatMesh;
+    } catch (error) {
+      Logger.error('❌ 3DGS 文件加载失败:', error);
+      this._showToast(`3DGS 加载失败: ${error.message}`, 'error');
+      throw error;
+    }
+  }
+
+  /**
+   * 检查是否为 3DGS 文件
+   * @param {File} file
+   * @returns {boolean}
+   */
+  _isGaussianSplatFile(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    return ['splat', 'ply', 'spz', 'ksplat'].includes(ext);
   }
 
   /**
