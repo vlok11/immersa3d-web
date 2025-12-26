@@ -16,30 +16,30 @@ export class ParallaxManager {
   constructor(camera) {
     /** @type {THREE.Camera} */
     this.camera = camera;
-    
+
     /** @type {number} */
     this.focalLength = 10; // 聚焦平面距离
-    
+
     /** @type {number} */
     this.eyeSeparation = 0.064; // 瞳距
-    
+
     /** @type {number} */
     this.stereoStrength = 1.0;
-    
+
     /** @type {THREE.Camera} */
     this.cameraL = new THREE.PerspectiveCamera();
     this.cameraL.layers.enable(1);
     this.cameraL.matrixAutoUpdate = false;
-    
+
     /** @type {THREE.Camera} */
     this.cameraR = new THREE.PerspectiveCamera();
     this.cameraR.layers.enable(2);
     this.cameraR.matrixAutoUpdate = false;
-    
+
     /** @private */
     this._cache = {
       projectionMatrix: new THREE.Matrix4(),
-      viewMatrix: new THREE.Matrix4()
+      viewMatrix: new THREE.Matrix4(),
     };
   }
 
@@ -71,7 +71,7 @@ export class ParallaxManager {
     // 左眼向左偏移 (-eyeSep/2)
     const eyeLeft = new THREE.Matrix4();
     eyeLeft.elements[12] = -eyeSep / 2;
-    
+
     // 右眼向右偏移 (+eyeSep/2)
     const eyeRight = new THREE.Matrix4();
     eyeRight.elements[12] = eyeSep / 2;
@@ -81,21 +81,21 @@ export class ParallaxManager {
 
     // 2. 设置投影矩阵 (Projection Matrix) - 离轴投影 (Off-axis Projection)
     // 这对于在屏幕平面上正确汇聚视线至关重要
-    
+
     const top = near * Math.tan(THREE.MathUtils.degToRad(fov * 0.5));
     const bottom = -top;
-    
+
     const a = aspect * Math.tan(THREE.MathUtils.degToRad(fov * 0.5));
-    
-    const b = a - eyeSep / 2 * near / focalLength;
-    const c = a + eyeSep / 2 * near / focalLength;
+
+    const b = a - ((eyeSep / 2) * near) / focalLength;
+    const c = a + ((eyeSep / 2) * near) / focalLength;
 
     // 左眼投影: 右移视锥体
     // left, right, top, bottom, near, far
-    this.cameraL.projectionMatrix.makePerspective(-a + eyeSep/2 * near/focalLength, a + eyeSep/2 * near/focalLength, top, bottom, near, far);
-    
+    this.cameraL.projectionMatrix.makePerspective(-b, c, top, bottom, near, far);
+
     // 右眼投影: 左移视锥体
-    this.cameraR.projectionMatrix.makePerspective(-a - eyeSep/2 * near/focalLength, a - eyeSep/2 * near/focalLength, top, bottom, near, far);
+    this.cameraR.projectionMatrix.makePerspective(-c, b, top, bottom, near, far);
   }
 
   /**
@@ -130,9 +130,9 @@ export class ParallaxManager {
   autoFocus(scene) {
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
-    
+
     const intersects = raycaster.intersectObjects(scene.children, true);
-    
+
     if (intersects.length > 0) {
       this.setFocalLength(intersects[0].distance);
       console.log(`🎯 自动聚焦: ${intersects[0].distance.toFixed(2)}m`);

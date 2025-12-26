@@ -1,0 +1,246 @@
+﻿
+> immersa3d-web@1.0.0 lint
+> eslint . --ext .js,.jsx,.cjs,.mjs --fix
+
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\components\Layout\NavigationBar.js
+  114:22  warning  'e' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\components\PropertyPanel\PropertyPanel.js
+  198:34  warning  'id' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+  253:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\components\Timeline\TimelineEditor.js
+  225:11  warning  'ms' is assigned a value but never used  no-unused-vars
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\core\AIEngine\DepthEstimator.js
+    6:10  warning  'ModelManager' is defined but never used   no-unused-vars
+   48:7   warning  Unexpected console statement               no-console
+   73:5   warning  Unexpected console statement               no-console
+   86:5   warning  Unexpected console statement               no-console
+  165:11  warning  'size' is assigned a value but never used  no-unused-vars
+  227:5   warning  Unexpected console statement               no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\core\AIEngine\ModelDownloader.js
+   73:9   warning  Unexpected console statement   no-console
+  152:7   warning  Unexpected console statement   no-console
+  156:5   warning  Unexpected console statement   no-console
+  170:14  error    Unexpected constant condition  no-constant-condition
+  202:7   warning  Unexpected console statement   no-console
+  292:9   warning  Unexpected console statement   no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\core\AIEngine\ModelManager.js
+   55:7   warning  Unexpected console statement             no-console
+   72:11  warning  Unexpected console statement             no-console
+   83:7   warning  Unexpected console statement             no-console
+   89:7   warning  Unexpected console statement             no-console
+  170:5   warning  Unexpected console statement             no-console
+  186:9   warning  Unexpected console statement             no-console
+  188:9   warning  Unexpected console statement             no-console
+  197:7   warning  Unexpected console statement             no-console
+  287:7   warning  Unexpected console statement             no-console
+  292:15  warning  'tf' is assigned a value but never used  no-unused-vars
+  295:7   warning  Unexpected console statement             no-console
+  347:5   warning  Unexpected console statement             no-console
+  370:5   warning  Unexpected console statement             no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\core\AIEngine\SceneAnalyzer.js
+  139:7   warning  Unexpected console statement                   no-console
+  144:7   warning  Unexpected console statement                   no-console
+  185:7   warning  Unexpected console statement                   no-console
+  249:12  warning  'batch' is assigned a value but never used     no-unused-vars
+  249:19  warning  'channels' is assigned a value but never used  no-unused-vars
+  362:5   warning  Unexpected console statement                   no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\core\Renderer\SceneManager.js
+   70:5  warning  Unexpected console statement  no-console
+  217:5  warning  Unexpected console statement  no-console
+  232:5  warning  Unexpected console statement  no-console
+  362:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\core\Utils\ErrorHandler.js
+  107:5  warning  Unexpected console statement  no-console
+  215:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\core\Utils\KeyboardShortcuts.js
+  36:5  warning  Unexpected console statement  no-console
+  76:7  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\core\Utils\MediaExporter.js
+   55:7   warning  'filename' is assigned a value but never used  no-unused-vars
+   70:5   warning  Unexpected console statement                   no-console
+  144:5   warning  Unexpected console statement                   no-console
+  164:5   warning  Unexpected console statement                   no-console
+  190:13  warning  'fps' is assigned a value but never used       no-unused-vars
+  190:23  warning  'quality' is assigned a value but never used   no-unused-vars
+  190:37  warning  'width' is assigned a value but never used     no-unused-vars
+  190:44  warning  'height' is assigned a value but never used    no-unused-vars
+  198:5   warning  Unexpected console statement                   no-console
+  203:9   warning  Unexpected console statement                   no-console
+  230:5   warning  Unexpected console statement                   no-console
+  255:9   warning  Unexpected console statement                   no-console
+  330:5   warning  Unexpected console statement                   no-console
+  339:5   warning  Unexpected console statement                   no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\main.js
+    10:29  warning  'ProjectionMode' is defined but never used                           no-unused-vars
+    14:26  warning  'StereoMode' is defined but never used                               no-unused-vars
+    15:26  warning  'ParticlePreset' is defined but never used                           no-unused-vars
+    16:25  warning  'WeatherPreset' is defined but never used                            no-unused-vars
+    17:27  warning  'LightingPreset' is defined but never used                           no-unused-vars
+    18:10  warning  'ProjectPanel' is defined but never used                             no-unused-vars
+    19:10  warning  'LayersPanel' is defined but never used                              no-unused-vars
+    20:10  warning  'ExportModal' is defined but never used                              no-unused-vars
+    21:10  warning  'SettingsModal' is defined but never used                            no-unused-vars
+    22:10  warning  'HelpModal' is defined but never used                                no-unused-vars
+    23:22  warning  'PathPreset' is defined but never used                               no-unused-vars
+    25:13  warning  'THREE' is defined but never used                                    no-unused-vars
+   128:7   warning  Unexpected console statement                                         no-console
+   192:5   warning  Unexpected console statement                                         no-console
+   207:5   warning  Unexpected console statement                                         no-console
+   279:5   warning  Unexpected console statement                                         no-console
+   338:9   warning  Unexpected console statement                                         no-console
+   374:64  warning  'e' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+   383:11  warning  Unexpected console statement                                         no-console
+   413:8   warning  'e' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+   696:5   warning  Unexpected console statement                                         no-console
+   753:5   warning  Unexpected console statement                                         no-console
+   826:5   warning  Unexpected console statement                                         no-console
+   835:5   warning  Unexpected console statement                                         no-console
+   883:5   warning  Unexpected console statement                                         no-console
+   894:5   warning  Unexpected console statement                                         no-console
+   899:5   warning  Unexpected console statement                                         no-console
+   933:5   warning  Unexpected console statement                                         no-console
+   982:5   warning  Unexpected console statement                                         no-console
+   993:5   warning  Unexpected console statement                                         no-console
+  1005:5   warning  Unexpected console statement                                         no-console
+  1014:5   warning  Unexpected console statement                                         no-console
+  1058:5   warning  Unexpected console statement                                         no-console
+  1124:5   warning  Unexpected console statement                                         no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\AtmosphereSystem\FogController.js
+   63:5  warning  Unexpected console statement  no-console
+   73:5  warning  Unexpected console statement  no-console
+  131:5  warning  Unexpected console statement  no-console
+  284:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\AtmosphereSystem\LightingManager.js
+   69:5  warning  Unexpected console statement  no-console
+  106:5  warning  Unexpected console statement  no-console
+  344:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\AtmosphereSystem\ParticleSystem.js
+   78:5  warning  Unexpected console statement  no-console
+  409:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\AtmosphereSystem\SkyController.js
+   80:5   warning  Unexpected console statement  no-console
+  154:5   warning  Unexpected console statement  no-console
+  217:5   warning  Unexpected console statement  no-console
+  272:11  warning  Unexpected console statement  no-console
+  318:5   warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\CameraSystem\CameraAnimator.js
+  158:5  warning  Unexpected console statement  no-console
+  423:7  warning  Unexpected console statement  no-console
+  434:7  warning  Unexpected console statement  no-console
+  464:5  warning  Unexpected console statement  no-console
+  498:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\CameraSystem\CameraPath.js
+  120:5  warning  Unexpected console statement  no-console
+  154:5  warning  Unexpected console statement  no-console
+  421:5  warning  Unexpected console statement  no-console
+  563:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\Effects3D\stereo\ParallaxManager.js
+  138:7  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\Effects3D\stereo\StereoRenderer.js
+  102:5  warning  Unexpected console statement  no-console
+  168:5  warning  Unexpected console statement  no-console
+  387:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\EnhancementSystem\FrameInterpolation.js
+  251:5  warning  Unexpected console statement  no-console
+  297:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\EnhancementSystem\SuperResolution.js
+   66:7  warning  Unexpected console statement  no-console
+   72:7  warning  Unexpected console statement  no-console
+  120:5  warning  Unexpected console statement  no-console
+  301:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\GeometrySystem\MaterialEditor.js
+   44:5   warning  Unexpected console statement  no-console
+  114:5   warning  Unexpected console statement  no-console
+  135:5   warning  Unexpected console statement  no-console
+  230:11  warning  Unexpected console statement  no-console
+  441:5   warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\GeometrySystem\MeshGenerator.js
+   55:5  warning  Unexpected console statement  no-console
+  168:5  warning  Unexpected console statement  no-console
+  203:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\GeometrySystem\PointCloud.js
+  125:5  warning  Unexpected console statement  no-console
+  185:5  warning  Unexpected console statement  no-console
+  295:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\GeometrySystem\TextureManager.js
+   72:11  warning  Unexpected console statement  no-console
+  100:5   warning  Unexpected console statement  no-console
+  121:5   warning  Unexpected console statement  no-console
+  158:5   warning  Unexpected console statement  no-console
+  210:5   warning  Unexpected console statement  no-console
+  242:7   warning  Unexpected console statement  no-console
+  278:5   warning  Unexpected console statement  no-console
+  286:5   warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\InputSystem\DragDropHandler.js
+   71:5  warning  Unexpected console statement  no-console
+  182:7  warning  Unexpected console statement  no-console
+  274:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\InputSystem\VideoProcessor.js
+   43:9  warning  Unexpected console statement  no-console
+   64:7  warning  Unexpected console statement  no-console
+  151:7  warning  Unexpected console statement  no-console
+  220:7  warning  Unexpected console statement  no-console
+  263:7  warning  Unexpected console statement  no-console
+  390:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\PostProcessing\EffectsManager.js
+  143:5  warning  Unexpected console statement  no-console
+  203:7  warning  Unexpected console statement  no-console
+  307:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\PostProcessing\EffectsStack.js
+  278:5  warning  Unexpected console statement  no-console
+  297:7  warning  Unexpected console statement  no-console
+  476:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\PostProcessing\LUTManager.js
+   59:5  warning  Unexpected console statement  no-console
+  221:7  warning  Unexpected console statement  no-console
+  305:5  warning  Unexpected console statement  no-console
+  387:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\ProjectionSystem\ProjectionManager.js
+   86:9  warning  Unexpected console statement  no-console
+   90:5  warning  Unexpected console statement  no-console
+  313:7  warning  Unexpected console statement  no-console
+  342:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\ProjectionSystem\projectors\CylindricalProjector.js
+  63:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\ProjectionSystem\projectors\FisheyeProjector.js
+  70:5  warning  Unexpected console statement  no-console
+
+A:\椤圭洰寮€鍙慭immersa3d-web\src\modules\ProjectionSystem\projectors\SphericalProjector.js
+  68:5  warning  Unexpected console statement  no-console
+
+鉁?169 problems (2 errors, 167 warnings)
+

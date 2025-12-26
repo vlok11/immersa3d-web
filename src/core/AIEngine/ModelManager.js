@@ -11,7 +11,7 @@ const ModelState = {
   IDLE: 'idle',
   LOADING: 'loading',
   READY: 'ready',
-  ERROR: 'error'
+  ERROR: 'error',
 };
 
 /**
@@ -23,19 +23,19 @@ export class ModelManager {
   constructor() {
     /** @type {Map<string, object>} */
     this.models = new Map();
-    
+
     /** @type {Map<string, string>} */
     this.modelStates = new Map();
-    
+
     /** @private */
     this._cache = null;
-    
+
     /** @private */
     this._backend = 'webgl';
-    
+
     /** @type {boolean} */
     this._initialized = false;
-    
+
     this._init();
   }
 
@@ -47,13 +47,12 @@ export class ModelManager {
     try {
       // 检测最佳后端
       this._backend = await this._detectBestBackend();
-      
+
       // 初始化 IndexedDB 缓存
       await this._initCache();
-      
+
       this._initialized = true;
       console.log(`✅ ModelManager 初始化完成 (后端: ${this._backend})`);
-      
     } catch (error) {
       console.error('❌ ModelManager 初始化失败:', error);
     }
@@ -103,14 +102,14 @@ export class ModelManager {
   async _initCache() {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('Immersa3D_ModelCache', 1);
-      
+
       request.onerror = () => reject(request.error);
-      
+
       request.onsuccess = () => {
         this._cache = request.result;
         resolve();
       };
-      
+
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
         if (!db.objectStoreNames.contains('models')) {
@@ -126,12 +125,12 @@ export class ModelManager {
    */
   async _getFromCache(modelId) {
     if (!this._cache) return null;
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this._cache.transaction(['models'], 'readonly');
       const store = transaction.objectStore('models');
       const request = store.get(modelId);
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result?.data || null);
     });
@@ -143,12 +142,12 @@ export class ModelManager {
    */
   async _saveToCache(modelId, data) {
     if (!this._cache) return;
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this._cache.transaction(['models'], 'readwrite');
       const store = transaction.objectStore('models');
       const request = store.put({ id: modelId, data, timestamp: Date.now() });
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve();
     });
@@ -173,7 +172,7 @@ export class ModelManager {
     try {
       // 尝试从缓存加载
       let modelData = await this._getFromCache(modelId);
-      
+
       if (!modelData) {
         // 从网络加载
         const response = await fetch(modelPath);
@@ -181,7 +180,7 @@ export class ModelManager {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         modelData = await response.arrayBuffer();
-        
+
         // 保存到缓存
         await this._saveToCache(modelId, modelData);
         console.log(`💾 模型已缓存: ${modelId}`);
@@ -191,13 +190,12 @@ export class ModelManager {
 
       // 根据模型类型初始化
       const model = await this._initializeModel(modelId, modelData, options);
-      
+
       this.models.set(modelId, model);
       this.modelStates.set(modelId, ModelState.READY);
-      
+
       console.log(`✅ 模型加载完成: ${modelId}`);
       return model;
-
     } catch (error) {
       this.modelStates.set(modelId, ModelState.ERROR);
       console.error(`❌ 模型加载失败: ${modelId}`, error);
@@ -215,38 +213,38 @@ export class ModelManager {
     if (type === 'onnx') {
       // 动态导入 ONNX Runtime
       const ort = await import('onnxruntime-web');
-      
+
       // 设置执行提供者
       const executionProviders = this._getExecutionProviders();
-      
+
       const session = await ort.InferenceSession.create(modelData, {
         executionProviders,
-        graphOptimizationLevel: 'all'
+        graphOptimizationLevel: 'all',
       });
-      
+
       return {
         type: 'onnx',
         session,
         inputNames: session.inputNames,
-        outputNames: session.outputNames
+        outputNames: session.outputNames,
       };
     }
 
     if (type === 'tfjs') {
       // 动态导入 TensorFlow.js
       const tf = await import('@tensorflow/tfjs');
-      
+
       // 设置后端
       await tf.setBackend(this._backend === 'webgpu' ? 'webgpu' : 'webgl');
       await tf.ready();
-      
+
       // 加载模型
       const model = await tf.loadGraphModel(options.modelUrl);
-      
+
       return {
         type: 'tfjs',
         model,
-        tf
+        tf,
       };
     }
 
@@ -291,7 +289,7 @@ export class ModelManager {
     }
 
     if (model.type === 'tfjs') {
-      const { tf } = model;
+      // const { tf } = model;
       const output = model.model.predict(inputs);
       const inferenceTime = performance.now() - startTime;
       console.log(`⚡ 推理完成 (${inferenceTime.toFixed(2)}ms): ${modelId}`);
@@ -345,7 +343,7 @@ export class ModelManager {
 
     this.models.delete(modelId);
     this.modelStates.delete(modelId);
-    
+
     console.log(`🗑️ 模型已卸载: ${modelId}`);
   }
 
@@ -363,12 +361,12 @@ export class ModelManager {
    */
   dispose() {
     this.clear();
-    
+
     if (this._cache) {
       this._cache.close();
       this._cache = null;
     }
-    
+
     console.log('🗑️ ModelManager 已销毁');
   }
 }

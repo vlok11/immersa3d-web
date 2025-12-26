@@ -11,7 +11,7 @@ import * as tf from '@tensorflow/tfjs';
  */
 export const UpscaleFactor = {
   X2: 2,
-  X4: 4
+  X4: 4,
 };
 
 /**
@@ -19,10 +19,10 @@ export const UpscaleFactor = {
  * @enum {string}
  */
 export const UpscaleMethod = {
-  BICUBIC: 'bicubic',       // 双三次插值
-  LANCZOS: 'lanczos',       // Lanczos 插值
-  ESRGAN: 'esrgan',         // AI 超分（需要模型）
-  SRCNN: 'srcnn'            // 轻量 AI 超分
+  BICUBIC: 'bicubic', // 双三次插值
+  LANCZOS: 'lanczos', // Lanczos 插值
+  ESRGAN: 'esrgan', // AI 超分（需要模型）
+  SRCNN: 'srcnn', // 轻量 AI 超分
 };
 
 /**
@@ -33,10 +33,10 @@ export class SuperResolution {
   constructor() {
     /** @private */
     this._model = null;
-    
+
     /** @private */
     this._modelType = null;
-    
+
     /** @type {Function|null} */
     this.onProgress = null;
   }
@@ -51,7 +51,7 @@ export class SuperResolution {
     try {
       // 设置 TensorFlow.js 后端
       await tf.ready();
-      
+
       // 尝试使用 WebGPU，回退到 WebGL
       const backends = ['webgpu', 'webgl'];
       for (const backend of backends) {
@@ -62,16 +62,15 @@ export class SuperResolution {
           continue;
         }
       }
-      
+
       console.log(`🧠 TensorFlow.js 后端: ${tf.getBackend()}`);
-      
+
       // 加载模型
       this._model = await tf.loadGraphModel(modelPath);
       this._modelType = type;
-      
+
       console.log(`✅ 超分模型加载完成: ${type}`);
       return true;
-      
     } catch (error) {
       console.error('模型加载失败:', error);
       return false;
@@ -85,10 +84,7 @@ export class SuperResolution {
    * @returns {Promise<HTMLCanvasElement>}
    */
   async upscale(input, options = {}) {
-    const {
-      factor = UpscaleFactor.X2,
-      method = UpscaleMethod.BICUBIC
-    } = options;
+    const { factor = UpscaleFactor.X2, method = UpscaleMethod.BICUBIC } = options;
 
     // 转换为 Canvas
     const inputCanvas = this._toCanvas(input);
@@ -102,11 +98,11 @@ export class SuperResolution {
       case UpscaleMethod.BICUBIC:
         result = this._bicubicUpscale(inputCanvas, targetWidth, targetHeight);
         break;
-        
+
       case UpscaleMethod.LANCZOS:
         result = this._lanczosUpscale(inputCanvas, targetWidth, targetHeight);
         break;
-        
+
       case UpscaleMethod.ESRGAN:
       case UpscaleMethod.SRCNN:
         if (!this._model) {
@@ -116,7 +112,7 @@ export class SuperResolution {
           result = await this._aiUpscale(inputCanvas, factor);
         }
         break;
-        
+
       default:
         result = this._bicubicUpscale(inputCanvas, targetWidth, targetHeight);
     }
@@ -133,12 +129,12 @@ export class SuperResolution {
     const outputCanvas = document.createElement('canvas');
     outputCanvas.width = targetWidth;
     outputCanvas.height = targetHeight;
-    
+
     const ctx = outputCanvas.getContext('2d');
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(canvas, 0, 0, targetWidth, targetHeight);
-    
+
     return outputCanvas;
   }
 
@@ -150,23 +146,23 @@ export class SuperResolution {
     // 多步放大以获得更好的质量
     const steps = Math.ceil(Math.log2(targetWidth / canvas.width));
     let current = canvas;
-    
+
     for (let i = 0; i < steps; i++) {
       const nextWidth = Math.min(current.width * 2, targetWidth);
       const nextHeight = Math.min(current.height * 2, targetHeight);
-      
+
       const stepCanvas = document.createElement('canvas');
       stepCanvas.width = nextWidth;
       stepCanvas.height = nextHeight;
-      
+
       const ctx = stepCanvas.getContext('2d');
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(current, 0, 0, nextWidth, nextHeight);
-      
+
       current = stepCanvas;
     }
-    
+
     // 最终调整到目标尺寸
     if (current.width !== targetWidth || current.height !== targetHeight) {
       const finalCanvas = document.createElement('canvas');
@@ -178,7 +174,7 @@ export class SuperResolution {
       ctx.drawImage(current, 0, 0, targetWidth, targetHeight);
       return finalCanvas;
     }
-    
+
     return current;
   }
 
@@ -191,29 +187,28 @@ export class SuperResolution {
     const imageTensor = tf.browser.fromPixels(canvas);
     const normalized = imageTensor.toFloat().div(255.0);
     const batched = normalized.expandDims(0);
-    
+
     try {
       // 推理
       const output = this._model.predict(batched);
-      
+
       // 处理输出
       const squeezed = output.squeeze();
       const clipped = squeezed.clipByValue(0, 1);
       const scaled = clipped.mul(255).cast('int32');
-      
+
       // 转换回 Canvas
       const outputCanvas = document.createElement('canvas');
       const [height, width] = scaled.shape.slice(0, 2);
       outputCanvas.width = width;
       outputCanvas.height = height;
-      
+
       await tf.browser.toPixels(scaled, outputCanvas);
-      
+
       // 清理
       tf.dispose([imageTensor, normalized, batched, output, squeezed, clipped, scaled]);
-      
+
       return outputCanvas;
-      
     } catch (error) {
       console.error('AI 超分失败:', error);
       // 回退到双三次
@@ -230,9 +225,9 @@ export class SuperResolution {
     if (input instanceof HTMLCanvasElement) {
       return input;
     }
-    
+
     const canvas = document.createElement('canvas');
-    
+
     if (input instanceof HTMLImageElement) {
       canvas.width = input.naturalWidth || input.width;
       canvas.height = input.naturalHeight || input.height;
@@ -244,7 +239,7 @@ export class SuperResolution {
       const ctx = canvas.getContext('2d');
       ctx.putImageData(input, 0, 0);
     }
-    
+
     return canvas;
   }
 
@@ -259,24 +254,20 @@ export class SuperResolution {
     outputCanvas.width = canvas.width;
     outputCanvas.height = canvas.height;
     const ctx = outputCanvas.getContext('2d');
-    
+
     // 绘制原图
     ctx.drawImage(canvas, 0, 0);
-    
+
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
     const width = canvas.width;
     const height = canvas.height;
-    
+
     // 锐化卷积核
-    const kernel = [
-      0, -amount, 0,
-      -amount, 1 + 4 * amount, -amount,
-      0, -amount, 0
-    ];
-    
+    const kernel = [0, -amount, 0, -amount, 1 + 4 * amount, -amount, 0, -amount, 0];
+
     const result = new Uint8ClampedArray(data.length);
-    
+
     for (let y = 1; y < height - 1; y++) {
       for (let x = 1; x < width - 1; x++) {
         for (let c = 0; c < 3; c++) {
@@ -292,10 +283,10 @@ export class SuperResolution {
         result[(y * width + x) * 4 + 3] = data[(y * width + x) * 4 + 3];
       }
     }
-    
+
     const resultData = new ImageData(result, width, height);
     ctx.putImageData(resultData, 0, 0);
-    
+
     return outputCanvas;
   }
 

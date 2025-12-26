@@ -9,7 +9,7 @@ export class PropertyPanel extends BaseComponent {
   constructor() {
     super();
     this._groups = new Map();
-    this.setStyles(/* css */`
+    this.setStyles(/* css */ `
       :host {
         display: block;
         background: rgba(30, 30, 30, 0.8);
@@ -65,20 +65,27 @@ export class PropertyPanel extends BaseComponent {
       .control-item {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        gap: 12px;
         font-size: 12px;
+        min-height: 28px;
+        position: relative;
       }
 
       .label {
         color: #ccc;
-        flex: 1;
+        width: 80px;  /* 固定宽度 */
+        flex-shrink: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .value-display {
-        width: 40px;
+        width: 45px;
         text-align: right;
         color: #888;
         font-family: monospace;
+        flex-shrink: 0;
       }
 
       /* Inputs */
@@ -146,16 +153,16 @@ export class PropertyPanel extends BaseComponent {
   }
 
   /**
-    * 添加控制组
-    * @param {string} id
-    * @param {string} title
-    */
+   * 添加控制组
+   * @param {string} id
+   * @param {string} title
+   */
   addGroup(id, title) {
     if (!this._groups.has(id)) {
       this._groups.set(id, {
         title,
         controls: [],
-        collapsed: false
+        collapsed: false,
       });
       this.renderGroups();
     }
@@ -188,10 +195,10 @@ export class PropertyPanel extends BaseComponent {
 
     container.innerHTML = '';
 
-    this._groups.forEach((group, id) => {
+    this._groups.forEach((group) => {
       const groupEl = document.createElement('div');
       groupEl.className = 'control-group';
-      
+
       const header = document.createElement('div');
       header.className = 'group-title';
       header.innerHTML = `
@@ -207,7 +214,7 @@ export class PropertyPanel extends BaseComponent {
       const content = document.createElement('div');
       content.className = `group-content ${group.collapsed ? 'collapsed' : ''}`;
 
-      group.controls.forEach(control => {
+      group.controls.forEach((control) => {
         const item = this._createControlItem(control);
         content.appendChild(item);
       });
@@ -235,18 +242,18 @@ export class PropertyPanel extends BaseComponent {
     let input;
 
     switch (type) {
-      case 'slider':
+      case 'slider': {
         input = document.createElement('input');
         input.type = 'range';
         input.min = min;
         input.max = max;
         input.step = step || 0.1;
         input.value = value;
-        
+
         const valueDisplay = document.createElement('span');
         valueDisplay.className = 'value-display';
         valueDisplay.textContent = value;
-        
+
         input.oninput = (e) => {
           const val = parseFloat(e.target.value);
           valueDisplay.textContent = val.toFixed(step < 0.1 ? 2 : 1);
@@ -255,6 +262,7 @@ export class PropertyPanel extends BaseComponent {
         wrapper.appendChild(input);
         wrapper.appendChild(valueDisplay);
         break;
+      }
 
       case 'color':
         input = document.createElement('input');
@@ -268,7 +276,7 @@ export class PropertyPanel extends BaseComponent {
 
       case 'select':
         input = document.createElement('select');
-        options.forEach(opt => {
+        options.forEach((opt) => {
           const option = document.createElement('option');
           option.value = opt.value;
           option.textContent = opt.label;

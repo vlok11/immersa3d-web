@@ -17,10 +17,10 @@ export class ImageProcessor {
   constructor() {
     /** @private */
     this._canvas = document.createElement('canvas');
-    
+
     /** @private */
     this._ctx = this._canvas.getContext('2d', {
-      willReadFrequently: true
+      willReadFrequently: true,
     });
   }
 
@@ -123,9 +123,9 @@ export class ImageProcessor {
    */
   resizeKeepAspect(image, maxSize) {
     const { naturalWidth: w, naturalHeight: h } = image;
-    
+
     let targetWidth, targetHeight;
-    
+
     if (w > h) {
       targetWidth = Math.min(w, maxSize);
       targetHeight = Math.round((h / w) * targetWidth);
@@ -144,7 +144,7 @@ export class ImageProcessor {
    */
   async createTexture(source) {
     const THREE = await import('three');
-    
+
     const texture = new THREE.Texture(source);
     texture.needsUpdate = true;
     texture.colorSpace = THREE.SRGBColorSpace;
@@ -164,10 +164,10 @@ export class ImageProcessor {
    */
   async createDepthTexture(depthData, width, height) {
     const THREE = await import('three');
-    
+
     // 转换为 RGBA 格式
     const data = new Uint8Array(width * height * 4);
-    
+
     for (let i = 0; i < depthData.length; i++) {
       const value = Math.floor(depthData[i] * 255);
       const idx = i * 4;
@@ -206,7 +206,7 @@ export class ImageProcessor {
   async toBlob(canvas, format = 'image/jpeg', quality = 0.9) {
     return new Promise((resolve, reject) => {
       canvas.toBlob(
-        blob => blob ? resolve(blob) : reject(new Error('转换失败')),
+        (blob) => (blob ? resolve(blob) : reject(new Error('转换失败'))),
         format,
         quality
       );
@@ -220,7 +220,7 @@ export class ImageProcessor {
    */
   applyGrayscale(imageData) {
     const data = imageData.data;
-    
+
     for (let i = 0; i < data.length; i += 4) {
       const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
       data[i] = gray;
@@ -245,14 +245,8 @@ export class ImageProcessor {
     const ctx = result.getContext('2d');
 
     ctx.save();
-    ctx.translate(
-      horizontal ? canvas.width : 0,
-      vertical ? canvas.height : 0
-    );
-    ctx.scale(
-      horizontal ? -1 : 1,
-      vertical ? -1 : 1
-    );
+    ctx.translate(horizontal ? canvas.width : 0, vertical ? canvas.height : 0);
+    ctx.scale(horizontal ? -1 : 1, vertical ? -1 : 1);
     ctx.drawImage(canvas, 0, 0);
     ctx.restore();
 
@@ -268,7 +262,7 @@ export class ImageProcessor {
     return {
       width: image.naturalWidth,
       height: image.naturalHeight,
-      aspectRatio: image.naturalWidth / image.naturalHeight
+      aspectRatio: image.naturalWidth / image.naturalHeight,
     };
   }
 }

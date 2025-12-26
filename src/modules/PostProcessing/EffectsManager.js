@@ -16,7 +16,7 @@ const VignetteShader = {
   uniforms: {
     tDiffuse: { value: null },
     offset: { value: 1.0 },
-    darkness: { value: 1.0 }
+    darkness: { value: 1.0 },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -38,7 +38,7 @@ const VignetteShader = {
       texel.rgb *= mix(1.0, smoothstep(0.0, 1.0, vignette), darkness);
       gl_FragColor = texel;
     }
-  `
+  `,
 };
 
 /**
@@ -49,7 +49,7 @@ const ColorCorrectionShader = {
     tDiffuse: { value: null },
     brightness: { value: 0.0 },
     contrast: { value: 1.0 },
-    saturation: { value: 1.0 }
+    saturation: { value: 1.0 },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -80,7 +80,7 @@ const ColorCorrectionShader = {
       
       gl_FragColor = texel;
     }
-  `
+  `,
 };
 
 /**
@@ -96,24 +96,24 @@ export class EffectsManager {
   constructor(renderer, scene, camera) {
     /** @type {THREE.WebGLRenderer} */
     this.renderer = renderer;
-    
+
     /** @type {THREE.Scene} */
     this.scene = scene;
-    
+
     /** @type {THREE.Camera} */
     this.camera = camera;
-    
+
     /** @type {EffectComposer} */
     this.composer = null;
-    
+
     /** @type {Map<string, ShaderPass>} */
     this.effects = new Map();
-    
+
     /** @type {object} */
     this.enabledEffects = {
       bloom: false,
       vignette: false,
-      colorCorrection: false
+      colorCorrection: false,
     };
 
     this._init();
@@ -126,20 +126,20 @@ export class EffectsManager {
   _init() {
     // 创建效果合成器
     this.composer = new EffectComposer(this.renderer);
-    
+
     // 添加渲染通道
     const renderPass = new RenderPass(this.scene, this.camera);
     this.composer.addPass(renderPass);
-    
+
     // 创建辉光效果
     this._createBloomPass();
-    
+
     // 创建暗角效果
     this._createVignettePass();
-    
+
     // 创建色彩校正效果
     this._createColorCorrectionPass();
-    
+
     console.log('✅ EffectsManager 初始化完成');
   }
 
@@ -151,12 +151,12 @@ export class EffectsManager {
     const size = this.renderer.getSize(new THREE.Vector2());
     const bloomPass = new UnrealBloomPass(
       new THREE.Vector2(size.x, size.y),
-      0.5,  // 强度
-      0.4,  // 半径
-      0.85  // 阈值
+      0.5, // 强度
+      0.4, // 半径
+      0.85 // 阈值
     );
     bloomPass.enabled = false;
-    
+
     this.composer.addPass(bloomPass);
     this.effects.set('bloom', bloomPass);
   }
@@ -170,7 +170,7 @@ export class EffectsManager {
     vignettePass.uniforms.offset.value = 1.5;
     vignettePass.uniforms.darkness.value = 1.2;
     vignettePass.enabled = false;
-    
+
     this.composer.addPass(vignettePass);
     this.effects.set('vignette', vignettePass);
   }
@@ -185,7 +185,7 @@ export class EffectsManager {
     colorPass.uniforms.contrast.value = 1.0;
     colorPass.uniforms.saturation.value = 1.0;
     colorPass.enabled = false;
-    
+
     this.composer.addPass(colorPass);
     this.effects.set('colorCorrection', colorPass);
   }
@@ -209,7 +209,7 @@ export class EffectsManager {
    * @returns {boolean}
    */
   hasEnabledEffects() {
-    return Object.values(this.enabledEffects).some(v => v);
+    return Object.values(this.enabledEffects).some((v) => v);
   }
 
   /**
@@ -268,7 +268,7 @@ export class EffectsManager {
    */
   setSize(width, height) {
     this.composer.setSize(width, height);
-    
+
     // 更新辉光效果分辨率
     const bloom = this.effects.get('bloom');
     if (bloom) {
@@ -282,7 +282,7 @@ export class EffectsManager {
    */
   updateCamera(camera) {
     this.camera = camera;
-    
+
     // 更新渲染通道
     const passes = this.composer.passes;
     if (passes[0] instanceof RenderPass) {
@@ -294,16 +294,16 @@ export class EffectsManager {
    * 销毁效果管理器
    */
   dispose() {
-    this.effects.forEach(effect => {
+    this.effects.forEach((effect) => {
       if (effect.dispose) effect.dispose();
     });
     this.effects.clear();
-    
+
     if (this.composer) {
       this.composer.dispose();
       this.composer = null;
     }
-    
+
     console.log('🗑️ EffectsManager 已销毁');
   }
 }

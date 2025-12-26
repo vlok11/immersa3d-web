@@ -24,11 +24,11 @@ export class MeshGenerator {
    */
   generateFromDepthMap(depthTexture, colorTexture, options = {}) {
     const {
-      resolution = 256,      // 网格分辨率
-      depthScale = 1.0,      // 深度缩放
-      width = 1,             // 网格宽度
-      height = 1,            // 网格高度
-      displacementBias = 0   // 位移偏移
+      resolution = 256, // 网格分辨率
+      depthScale = 1.0, // 深度缩放
+      width = 1, // 网格宽度
+      height = 1, // 网格高度
+      displacementBias = 0, // 位移偏移
     } = options;
 
     // 创建平面几何体
@@ -40,11 +40,11 @@ export class MeshGenerator {
         depthMap: { value: depthTexture },
         colorMap: { value: colorTexture },
         depthScale: { value: depthScale },
-        displacementBias: { value: displacementBias }
+        displacementBias: { value: displacementBias },
       },
       vertexShader: this._getVertexShader(),
       fragmentShader: this._getFragmentShader(),
-      side: THREE.DoubleSide
+      side: THREE.DoubleSide,
     });
 
     const mesh = new THREE.Mesh(geometry, material);
@@ -127,12 +127,7 @@ export class MeshGenerator {
    * @returns {THREE.Points}
    */
   createPointCloud(depthData, colorTexture, options = {}) {
-    const {
-      width = 256,
-      height = 256,
-      pointSize = 2.0,
-      depthScale = 1.0
-    } = options;
+    const { width = 256, height = 256, pointSize = 2.0, depthScale = 1.0 } = options;
 
     const positions = [];
     const colors = [];
@@ -149,7 +144,7 @@ export class MeshGenerator {
         const pz = depth * depthScale;
 
         positions.push(px, py, pz);
-        
+
         // 使用深度作为颜色（灰度）
         colors.push(depth, depth, depth);
       }
@@ -162,7 +157,7 @@ export class MeshGenerator {
     const material = new THREE.PointsMaterial({
       size: pointSize,
       vertexColors: true,
-      sizeAttenuation: true
+      sizeAttenuation: true,
     });
 
     const points = new THREE.Points(geometry, material);
@@ -181,15 +176,12 @@ export class MeshGenerator {
    * @returns {THREE.Mesh}
    */
   createImagePlane(texture, options = {}) {
-    const {
-      width = 1,
-      height = 1
-    } = options;
+    const { width = 1, height = 1 } = options;
 
     const geometry = new THREE.PlaneGeometry(width, height);
     const material = new THREE.MeshBasicMaterial({
       map: texture,
-      side: THREE.DoubleSide
+      side: THREE.DoubleSide,
     });
 
     const mesh = new THREE.Mesh(geometry, material);

@@ -11,13 +11,13 @@ export class VideoProcessor {
   constructor() {
     /** @private */
     this._ffmpeg = null;
-    
+
     /** @private */
     this._loaded = false;
-    
+
     /** @type {Function|null} */
     this.onProgress = null;
-    
+
     /** @type {Function|null} */
     this.onLog = null;
   }
@@ -33,10 +33,10 @@ export class VideoProcessor {
       // 动态导入 FFmpeg
       const { FFmpeg } = await import('@ffmpeg/ffmpeg');
       const { fetchFile, toBlobURL } = await import('@ffmpeg/util');
-      
+
       this._ffmpeg = new FFmpeg();
       this._fetchFile = fetchFile;
-      
+
       // 设置日志回调
       this._ffmpeg.on('log', ({ message }) => {
         if (this.onLog) this.onLog(message);
@@ -48,7 +48,7 @@ export class VideoProcessor {
         if (this.onProgress) {
           this.onProgress({
             progress: Math.round(progress * 100),
-            time: time / 1000000 // 转换为秒
+            time: time / 1000000, // 转换为秒
           });
         }
       });
@@ -63,7 +63,6 @@ export class VideoProcessor {
       this._loaded = true;
       console.log('✅ FFmpeg.wasm 加载完成');
       return true;
-      
     } catch (error) {
       console.error('❌ FFmpeg.wasm 加载失败:', error);
       return false;
@@ -91,7 +90,7 @@ export class VideoProcessor {
       duration = null,
       maxFrames = 100,
       width = null,
-      height = null
+      height = null,
     } = options;
 
     if (!this._loaded) {
@@ -108,21 +107,21 @@ export class VideoProcessor {
 
       // 构建 FFmpeg 命令
       const args = ['-i', inputName];
-      
+
       if (startTime > 0) {
         args.push('-ss', startTime.toString());
       }
-      
+
       if (duration) {
         args.push('-t', duration.toString());
       }
-      
+
       args.push('-vf', `fps=${fps}`);
-      
+
       if (width && height) {
         args.push('-s', `${width}x${height}`);
       }
-      
+
       args.push('-vframes', maxFrames.toString());
       args.push(outputPattern);
 
@@ -137,7 +136,7 @@ export class VideoProcessor {
           const blob = new Blob([data], { type: 'image/png' });
           const imageData = await this._blobToImageData(blob);
           frames.push(imageData);
-          
+
           // 清理帧文件
           await this._ffmpeg.deleteFile(frameName);
         } catch {
@@ -151,7 +150,6 @@ export class VideoProcessor {
 
       console.log(`📽️ 提取了 ${frames.length} 帧`);
       return frames;
-      
     } catch (error) {
       console.error('帧提取失败:', error);
       throw error;
@@ -165,13 +163,7 @@ export class VideoProcessor {
    * @returns {Promise<Blob>}
    */
   async encodeVideo(frames, options = {}) {
-    const {
-      fps = 30,
-      codec = 'libx264',
-      format = 'mp4',
-      crf = 23,
-      preset = 'medium'
-    } = options;
+    const { fps = 30, codec = 'libx264', format = 'mp4', crf = 23, preset = 'medium' } = options;
 
     if (!this._loaded) {
       await this.load();
@@ -183,7 +175,7 @@ export class VideoProcessor {
       // 写入所有帧
       for (let i = 0; i < frames.length; i++) {
         const canvas = frames[i];
-        const blob = await new Promise(resolve => {
+        const blob = await new Promise((resolve) => {
           canvas.toBlob(resolve, 'image/png');
         });
         const frameName = `frame_${String(i + 1).padStart(4, '0')}.png`;
@@ -192,13 +184,19 @@ export class VideoProcessor {
 
       // 构建编码命令
       const args = [
-        '-framerate', fps.toString(),
-        '-i', 'frame_%04d.png',
-        '-c:v', codec,
-        '-crf', crf.toString(),
-        '-preset', preset,
-        '-pix_fmt', 'yuv420p',
-        outputName
+        '-framerate',
+        fps.toString(),
+        '-i',
+        'frame_%04d.png',
+        '-c:v',
+        codec,
+        '-crf',
+        crf.toString(),
+        '-preset',
+        preset,
+        '-pix_fmt',
+        'yuv420p',
+        outputName,
       ];
 
       // 执行编码
@@ -214,12 +212,13 @@ export class VideoProcessor {
         const frameName = `frame_${String(i + 1).padStart(4, '0')}.png`;
         try {
           await this._ffmpeg.deleteFile(frameName);
-        } catch {}
+        } catch {
+          // ignore cleanup errors
+        }
       }
 
       console.log(`🎬 视频编码完成 (${(blob.size / 1024 / 1024).toFixed(2)} MB)`);
       return blob;
-      
     } catch (error) {
       console.error('视频编码失败:', error);
       throw error;
@@ -244,13 +243,13 @@ export class VideoProcessor {
       await this._ffmpeg.writeFile(inputName, await this._fetchFile(videoFile));
 
       const args = ['-i', inputName];
-      
+
       if (outputFormat === 'webm') {
         args.push('-c:v', 'libvpx-vp9', '-crf', '30', '-b:v', '0');
       } else if (outputFormat === 'mp4') {
         args.push('-c:v', 'libx264', '-crf', '23');
       }
-      
+
       args.push(outputName);
 
       await this._ffmpeg.exec(args);
@@ -263,7 +262,6 @@ export class VideoProcessor {
 
       console.log(`🔄 格式转换完成: ${outputFormat}`);
       return blob;
-      
     } catch (error) {
       console.error('格式转换失败:', error);
       throw error;
@@ -288,11 +286,15 @@ export class VideoProcessor {
       await this._ffmpeg.writeFile(inputName, await this._fetchFile(videoFile));
 
       await this._ffmpeg.exec([
-        '-i', inputName,
-        '-ss', time.toString(),
-        '-vframes', '1',
-        '-q:v', '2',
-        outputName
+        '-i',
+        inputName,
+        '-ss',
+        time.toString(),
+        '-vframes',
+        '1',
+        '-q:v',
+        '2',
+        outputName,
       ]);
 
       const data = await this._ffmpeg.readFile(outputName);
@@ -302,7 +304,6 @@ export class VideoProcessor {
       await this._ffmpeg.deleteFile(outputName);
 
       return blob;
-      
     } catch (error) {
       console.error('缩略图生成失败:', error);
       throw error;
@@ -319,7 +320,7 @@ export class VideoProcessor {
     return new Promise((resolve, reject) => {
       const video = document.createElement('video');
       video.preload = 'metadata';
-      
+
       video.onloadedmetadata = () => {
         resolve({
           duration: video.duration,
@@ -327,16 +328,16 @@ export class VideoProcessor {
           height: video.videoHeight,
           name: videoFile.name,
           size: videoFile.size,
-          type: videoFile.type
+          type: videoFile.type,
         });
         URL.revokeObjectURL(video.src);
       };
-      
+
       video.onerror = () => {
         reject(new Error('无法读取视频信息'));
         URL.revokeObjectURL(video.src);
       };
-      
+
       video.src = URL.createObjectURL(videoFile);
     });
   }
@@ -348,7 +349,7 @@ export class VideoProcessor {
   async _blobToImageData(blob) {
     const img = new Image();
     const url = URL.createObjectURL(blob);
-    
+
     return new Promise((resolve, reject) => {
       img.onload = () => {
         const canvas = document.createElement('canvas');

@@ -11,14 +11,14 @@ import gsap from 'gsap';
  * @enum {string}
  */
 export const AnimationType = {
-  ORBIT: 'orbit',           // 环绕
-  DOLLY: 'dolly',           // 推拉
-  PAN: 'pan',               // 平移
-  ZOOM: 'zoom',             // 缩放
-  SHAKE: 'shake',           // 晃动
-  PARALLAX: 'parallax',     // 视差
-  SPIRAL: 'spiral',         // 螺旋
-  BOUNCE: 'bounce'          // 弹跳
+  ORBIT: 'orbit', // 环绕
+  DOLLY: 'dolly', // 推拉
+  PAN: 'pan', // 平移
+  ZOOM: 'zoom', // 缩放
+  SHAKE: 'shake', // 晃动
+  PARALLAX: 'parallax', // 视差
+  SPIRAL: 'spiral', // 螺旋
+  BOUNCE: 'bounce', // 弹跳
 };
 
 /**
@@ -32,7 +32,7 @@ export const EasingType = {
   EASE_IN_OUT: 'power2.inOut',
   ELASTIC: 'elastic.out(1, 0.3)',
   BOUNCE: 'bounce.out',
-  BACK: 'back.out(1.7)'
+  BACK: 'back.out(1.7)',
 };
 
 /**
@@ -47,28 +47,28 @@ export class CameraAnimator {
   constructor(camera, controls) {
     /** @type {THREE.Camera} */
     this.camera = camera;
-    
+
     /** @type {object} */
     this.controls = controls;
-    
+
     /** @type {gsap.core.Timeline|null} */
     this.timeline = null;
-    
+
     /** @type {boolean} */
     this.isPlaying = false;
-    
+
     /** @type {number} */
     this.duration = 5;
-    
+
     /** @type {Function[]} */
     this._onUpdateCallbacks = [];
-    
+
     /** @type {Function[]} */
     this._onCompleteCallbacks = [];
-    
+
     /** @private */
     this._initialState = null;
-    
+
     this._saveInitialState();
   }
 
@@ -80,7 +80,7 @@ export class CameraAnimator {
     this._initialState = {
       position: this.camera.position.clone(),
       rotation: this.camera.rotation.clone(),
-      target: this.controls?.target?.clone() || new THREE.Vector3()
+      target: this.controls?.target?.clone() || new THREE.Vector3(),
     };
   }
 
@@ -110,7 +110,7 @@ export class CameraAnimator {
       duration = this.duration,
       easing = EasingType.EASE_IN_OUT,
       repeat = 0,
-      yoyo = false
+      yoyo = false,
     } = options;
 
     // 停止现有动画
@@ -121,7 +121,7 @@ export class CameraAnimator {
       repeat,
       yoyo,
       onUpdate: () => this._triggerUpdate(),
-      onComplete: () => this._triggerComplete()
+      onComplete: () => this._triggerComplete(),
     });
 
     switch (type) {
@@ -170,7 +170,7 @@ export class CameraAnimator {
     const startAngle = Math.atan2(startPos.z - target.z, startPos.x - target.x);
 
     const proxy = { angle: 0 };
-    
+
     this.timeline.to(proxy, {
       angle,
       duration,
@@ -181,7 +181,7 @@ export class CameraAnimator {
         this.camera.position.z = target.z + r * Math.sin(currentAngle);
         this.camera.lookAt(target);
         this.controls?.update?.();
-      }
+      },
     });
   }
 
@@ -193,7 +193,7 @@ export class CameraAnimator {
     const { distance = 2, direction = 'in' } = options;
     const target = this.controls?.target || new THREE.Vector3();
     const dir = this.camera.position.clone().sub(target).normalize();
-    
+
     const endPos = this.camera.position.clone();
     if (direction === 'in') {
       endPos.sub(dir.multiplyScalar(distance));
@@ -207,7 +207,7 @@ export class CameraAnimator {
       z: endPos.z,
       duration,
       ease: easing,
-      onUpdate: () => this.controls?.update?.()
+      onUpdate: () => this.controls?.update?.(),
     });
   }
 
@@ -218,22 +218,30 @@ export class CameraAnimator {
   _createPanAnimation(duration, easing, options = {}) {
     const { x = 0, y = 0 } = options;
     const target = this.controls?.target || new THREE.Vector3();
-    
-    this.timeline.to(this.camera.position, {
-      x: this.camera.position.x + x,
-      y: this.camera.position.y + y,
-      duration,
-      ease: easing
-    }, 0);
 
-    if (this.controls?.target) {
-      this.timeline.to(this.controls.target, {
-        x: target.x + x,
-        y: target.y + y,
+    this.timeline.to(
+      this.camera.position,
+      {
+        x: this.camera.position.x + x,
+        y: this.camera.position.y + y,
         duration,
         ease: easing,
-        onUpdate: () => this.controls?.update?.()
-      }, 0);
+      },
+      0
+    );
+
+    if (this.controls?.target) {
+      this.timeline.to(
+        this.controls.target,
+        {
+          x: target.x + x,
+          y: target.y + y,
+          duration,
+          ease: easing,
+          onUpdate: () => this.controls?.update?.(),
+        },
+        0
+      );
     }
   }
 
@@ -243,13 +251,13 @@ export class CameraAnimator {
    */
   _createZoomAnimation(duration, easing, options = {}) {
     const { factor = 1.5 } = options;
-    
+
     if (this.camera.isPerspectiveCamera) {
       this.timeline.to(this.camera, {
         fov: this.camera.fov / factor,
         duration,
         ease: easing,
-        onUpdate: () => this.camera.updateProjectionMatrix()
+        onUpdate: () => this.camera.updateProjectionMatrix(),
       });
     }
   }
@@ -266,13 +274,13 @@ export class CameraAnimator {
     for (let i = 0; i < iterations; i++) {
       const t = (i + 1) / iterations;
       const decay = 1 - t; // 衰减
-      
+
       this.timeline.to(this.camera.position, {
         x: startPos.x + (Math.random() - 0.5) * intensity * decay,
         y: startPos.y + (Math.random() - 0.5) * intensity * decay,
         z: startPos.z + (Math.random() - 0.5) * intensity * decay,
         duration: duration / iterations,
-        ease: 'none'
+        ease: 'none',
       });
     }
 
@@ -282,7 +290,7 @@ export class CameraAnimator {
       y: startPos.y,
       z: startPos.z,
       duration: 0.1,
-      ease: 'power2.out'
+      ease: 'power2.out',
     });
   }
 
@@ -294,19 +302,22 @@ export class CameraAnimator {
     const { range = 0.5 } = options;
     const startX = this.camera.position.x;
 
-    this.timeline.to(this.camera.position, {
-      x: startX - range,
-      duration: duration / 2,
-      ease: easing
-    }).to(this.camera.position, {
-      x: startX + range,
-      duration: duration,
-      ease: easing
-    }).to(this.camera.position, {
-      x: startX,
-      duration: duration / 2,
-      ease: easing
-    });
+    this.timeline
+      .to(this.camera.position, {
+        x: startX - range,
+        duration: duration / 2,
+        ease: easing,
+      })
+      .to(this.camera.position, {
+        x: startX + range,
+        duration: duration,
+        ease: easing,
+      })
+      .to(this.camera.position, {
+        x: startX,
+        duration: duration / 2,
+        ease: easing,
+      });
   }
 
   /**
@@ -332,13 +343,13 @@ export class CameraAnimator {
       onUpdate: () => {
         const angle = startAngle + proxy.progress * Math.PI * 2 * revolutions;
         const radius = startRadius * (1 - proxy.progress * 0.3);
-        
+
         this.camera.position.x = target.x + radius * Math.cos(angle);
         this.camera.position.z = target.z + radius * Math.sin(angle);
         this.camera.position.y = startY + proxy.progress * heightChange;
         this.camera.lookAt(target);
         this.controls?.update?.();
-      }
+      },
     });
   }
 
@@ -350,15 +361,17 @@ export class CameraAnimator {
     const { height = 1 } = options;
     const startY = this.camera.position.y;
 
-    this.timeline.to(this.camera.position, {
-      y: startY + height,
-      duration: duration * 0.3,
-      ease: 'power2.out'
-    }).to(this.camera.position, {
-      y: startY,
-      duration: duration * 0.7,
-      ease: 'bounce.out'
-    });
+    this.timeline
+      .to(this.camera.position, {
+        y: startY + height,
+        duration: duration * 0.3,
+        ease: 'power2.out',
+      })
+      .to(this.camera.position, {
+        y: startY,
+        duration: duration * 0.7,
+        ease: 'bounce.out',
+      });
   }
 
   /**
@@ -438,7 +451,7 @@ export class CameraAnimator {
    */
   reset() {
     this.stop();
-    
+
     if (this._initialState) {
       this.camera.position.copy(this._initialState.position);
       this.camera.rotation.copy(this._initialState.rotation);
@@ -447,7 +460,7 @@ export class CameraAnimator {
       }
       this.controls?.update?.();
     }
-    
+
     console.log('🔄 相机已重置');
   }
 

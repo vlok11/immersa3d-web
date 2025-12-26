@@ -42,63 +42,22 @@
       <!-- 主界面 -->
       <main id="main-app" class="main-app" style="display: none">
         <!-- 顶部导航栏 -->
-        <header class="navbar">
-          <div class="navbar__logo">
-            <span class="logo-icon">🎨</span>
-            <span class="logo-text">Immersa 3D</span>
-          </div>
-          <nav class="navbar__menu">
-            <button class="navbar__btn" data-action="new">新建</button>
-            <button class="navbar__btn" data-action="open">打开</button>
-            <button class="navbar__btn" data-action="save">保存</button>
-            <button class="navbar__btn" data-action="export">导出</button>
-          </nav>
-          <div class="navbar__actions">
-            <button
-              class="navbar__btn navbar__btn--icon"
-              data-action="settings"
-              title="设置"
-            >
-              ⚙️
-            </button>
-            <button
-              class="navbar__btn navbar__btn--icon"
-              data-action="help"
-              title="帮助"
-            >
-              ❓
-            </button>
-          </div>
-        </header>
+        <!-- 顶部导航栏 -->
+        <navigation-bar id="main-nav"></navigation-bar>
 
         <!-- 主内容区 -->
         <div class="workspace">
           <!-- 左侧边栏 -->
-          <aside class="sidebar sidebar--left">
-            <div class="sidebar__section">
-              <h3 class="sidebar__title">项目</h3>
-              <div class="sidebar__content" id="project-panel">
-                <div class="upload-zone" id="upload-zone">
-                  <div class="upload-zone__icon">📁</div>
-                  <p class="upload-zone__text">拖放图片/视频到此处</p>
-                  <p class="upload-zone__hint">或点击选择文件</p>
-                  <input
-                    type="file"
-                    id="file-input"
-                    accept="image/*,video/*"
-                    hidden
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="sidebar__section">
-              <h3 class="sidebar__title">图层</h3>
-              <div class="sidebar__content" id="layers-panel">
-                <p class="empty-hint">暂无图层</p>
-              </div>
-            </div>
-          </aside>
+          <!-- 左侧边栏 -->
+          <app-sidebar position="left">
+            <sidebar-section title="项目">
+              <project-panel id="project-panel"></project-panel>
+            </sidebar-section>
+            
+            <sidebar-section title="图层">
+              <layers-panel id="layers-panel"></layers-panel>
+            </sidebar-section>
+          </app-sidebar>
 
           <!-- 3D 预览区 -->
           <section class="viewport">
@@ -142,7 +101,17 @@
             <!-- Three.js 画布容器 -->
             <div class="viewport__canvas" id="viewport-canvas">
               <div class="viewport__placeholder">
-                <p>请上传图片或视频开始创作</p>
+                <div class="viewport__placeholder-icon">🎨</div>
+                <div class="viewport__placeholder-text">开始您的 3D 创作</div>
+                <div class="viewport__placeholder-hint">
+                  拖放图片/视频到此处，或点击下方按钮选择文件
+                  <br>
+                  支持格式：JPG, PNG, MP4, WEBM
+                </div>
+                <div class="viewport__placeholder-actions">
+                  <button class="placeholder-btn" id="upload-image-btn">📷 上传图片</button>
+                  <button class="placeholder-btn" id="upload-video-btn">🎬 上传视频</button>
+                </div>
               </div>
             </div>
 
@@ -153,16 +122,11 @@
           </section>
 
           <!-- 右侧属性面板 -->
-          <aside class="sidebar sidebar--right">
-            <div class="sidebar__section">
-              <h3 class="sidebar__title">属性</h3>
-              <div class="sidebar__content">
-                <property-panel id="main-properties"></property-panel>
-              </div>
-            </div>
-
-
-          </aside>
+          <app-sidebar position="right">
+            <sidebar-section title="属性">
+              <property-panel id="main-properties"></property-panel>
+            </sidebar-section>
+          </app-sidebar>
         </div>
 
         <!-- 底部状态栏 -->
@@ -182,7 +146,11 @@
     </div>
 
     <!-- 模态框容器 -->
-    <div id="modal-container"></div>
+    <div id="modal-container">
+      <export-modal id="export-modal"></export-modal>
+      <settings-modal id="settings-modal"></settings-modal>
+      <help-modal id="help-modal"></help-modal>
+    </div>
 
     <!-- Toast 消息容器 -->
     <div id="toast-container" class="toast-container"></div>

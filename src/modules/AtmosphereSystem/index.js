@@ -6,3 +6,4 @@
 export { ParticleSystem, ParticlePreset } from './ParticleSystem.js';
 export { SkyController, WeatherPreset } from './SkyController.js';
 export { LightingManager, LightingPreset } from './LightingManager.js';
+export { FogController, FogType, FogPreset } from './FogController.js';

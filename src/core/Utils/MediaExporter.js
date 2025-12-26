@@ -13,7 +13,7 @@ export const ExportFormat = {
   WEBP: 'image/webp',
   GIF: 'gif',
   WEBM: 'video/webm',
-  MP4: 'video/mp4'
+  MP4: 'video/mp4',
 };
 
 /**
@@ -27,16 +27,16 @@ export class MediaExporter {
   constructor(renderer) {
     /** @type {THREE.WebGLRenderer} */
     this.renderer = renderer;
-    
+
     /** @type {HTMLCanvasElement[]} */
     this._frames = [];
-    
+
     /** @type {boolean} */
     this._isRecording = false;
-    
+
     /** @private */
     this._recordingStartTime = 0;
-    
+
     /** @private */
     this._frameInterval = null;
   }
@@ -52,7 +52,7 @@ export class MediaExporter {
       quality = 0.92,
       width,
       height,
-      filename = `immersa3d-${Date.now()}`
+      // filename = `immersa3d-${Date.now()}`,
     } = options;
 
     // 获取当前帧
@@ -79,12 +79,12 @@ export class MediaExporter {
     const {
       format = ExportFormat.PNG,
       quality = 0.92,
-      filename = `immersa3d-${Date.now()}`
+      filename = `immersa3d-${Date.now()}`,
     } = options;
 
     const dataUrl = this.exportImage({ format, quality });
     const ext = format.split('/')[1] || 'png';
-    
+
     this._downloadDataUrl(dataUrl, `${filename}.${ext}`);
   }
 
@@ -96,12 +96,12 @@ export class MediaExporter {
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
-    
+
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(sourceCanvas, 0, 0, width, height);
-    
+
     return canvas;
   }
 
@@ -110,10 +110,7 @@ export class MediaExporter {
    * @param {object} options
    */
   startRecording(options = {}) {
-    const {
-      fps = 30,
-      maxDuration = 10
-    } = options;
+    const { fps = 30, maxDuration = 10 } = options;
 
     if (this._isRecording) {
       console.warn('⚠️ 已在录制中');
@@ -140,7 +137,7 @@ export class MediaExporter {
       frameCanvas.height = canvas.height;
       const ctx = frameCanvas.getContext('2d');
       ctx.drawImage(canvas, 0, 0);
-      
+
       this._frames.push(frameCanvas);
     }, frameTime);
 
@@ -163,7 +160,7 @@ export class MediaExporter {
 
     this._isRecording = false;
     const duration = (performance.now() - this._recordingStartTime) / 1000;
-    
+
     console.log(`⏹️ 录制停止 (${this._frames.length} 帧, ${duration.toFixed(2)}s)`);
     return this._frames;
   }
@@ -190,12 +187,7 @@ export class MediaExporter {
    * @returns {Promise<Blob>}
    */
   async exportGIF(options = {}) {
-    const {
-      fps = 15,
-      quality = 10,
-      width,
-      height
-    } = options;
+    // const { fps, quality, width, height } = options;
 
     const frames = this._frames;
     if (frames.length === 0) {
@@ -204,7 +196,7 @@ export class MediaExporter {
 
     // 创建简易 GIF（实际项目中应使用 gif.js）
     console.log(`🎞️ 准备导出 GIF (${frames.length} 帧)...`);
-    
+
     // 返回第一帧作为静态图片的替代方案
     return new Promise((resolve) => {
       frames[0].toBlob((blob) => {
@@ -220,11 +212,7 @@ export class MediaExporter {
    * @returns {Promise<Blob>}
    */
   async exportVideo(options = {}) {
-    const {
-      fps = 30,
-      bitrate = 5000000,
-      mimeType = 'video/webm;codecs=vp9'
-    } = options;
+    const { fps = 30, bitrate = 5000000, mimeType = 'video/webm;codecs=vp9' } = options;
 
     const frames = this._frames;
     if (frames.length === 0) {
@@ -251,7 +239,7 @@ export class MediaExporter {
     const stream = canvas.captureStream(fps);
     const recorder = new MediaRecorder(stream, {
       mimeType: MediaRecorder.isTypeSupported(mimeType) ? mimeType : 'video/webm',
-      videoBitsPerSecond: bitrate
+      videoBitsPerSecond: bitrate,
     });
 
     const chunks = [];
@@ -296,7 +284,7 @@ export class MediaExporter {
    */
   async downloadVideo(options = {}) {
     const { filename = `immersa3d-${Date.now()}` } = options;
-    
+
     try {
       const blob = await this.exportVideo(options);
       this._downloadBlob(blob, `${filename}.webm`);

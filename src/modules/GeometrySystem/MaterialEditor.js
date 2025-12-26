@@ -15,7 +15,7 @@ export const MaterialType = {
   BASIC: 'basic',
   PHONG: 'phong',
   TOON: 'toon',
-  MATCAP: 'matcap'
+  MATCAP: 'matcap',
 };
 
 /**
@@ -26,10 +26,10 @@ export class MaterialEditor {
   constructor() {
     /** @type {THREE.Material|null} */
     this.currentMaterial = null;
-    
+
     /** @type {THREE.Mesh|null} */
     this.targetMesh = null;
-    
+
     /** @type {Map<string, THREE.Texture>} */
     this.textures = new Map();
   }
@@ -52,61 +52,61 @@ export class MaterialEditor {
    */
   createMaterial(type, options = {}) {
     let material;
-    
+
     const defaults = {
       color: 0xffffff,
       roughness: 0.5,
       metalness: 0.0,
       transparent: false,
       opacity: 1.0,
-      side: THREE.DoubleSide
+      side: THREE.DoubleSide,
     };
-    
+
     const params = { ...defaults, ...options };
 
     switch (type) {
       case MaterialType.STANDARD:
         material = new THREE.MeshStandardMaterial(params);
         break;
-        
+
       case MaterialType.PHYSICAL:
         material = new THREE.MeshPhysicalMaterial({
           ...params,
           clearcoat: options.clearcoat || 0,
           clearcoatRoughness: options.clearcoatRoughness || 0,
           transmission: options.transmission || 0,
-          ior: options.ior || 1.5
+          ior: options.ior || 1.5,
         });
         break;
-        
+
       case MaterialType.BASIC:
         material = new THREE.MeshBasicMaterial({
           color: params.color,
           transparent: params.transparent,
           opacity: params.opacity,
-          side: params.side
+          side: params.side,
         });
         break;
-        
+
       case MaterialType.PHONG:
         material = new THREE.MeshPhongMaterial({
           color: params.color,
           shininess: options.shininess || 30,
           transparent: params.transparent,
           opacity: params.opacity,
-          side: params.side
+          side: params.side,
         });
         break;
-        
+
       case MaterialType.TOON:
         material = new THREE.MeshToonMaterial({
           color: params.color,
           transparent: params.transparent,
           opacity: params.opacity,
-          side: params.side
+          side: params.side,
         });
         break;
-        
+
       default:
         material = new THREE.MeshStandardMaterial(params);
     }
@@ -206,7 +206,7 @@ export class MaterialEditor {
    */
   async loadTexture(name, source) {
     const loader = new THREE.TextureLoader();
-    
+
     let url;
     if (source instanceof File) {
       url = URL.createObjectURL(source);
@@ -215,19 +215,24 @@ export class MaterialEditor {
     }
 
     return new Promise((resolve, reject) => {
-      loader.load(url, (texture) => {
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        
-        this.textures.set(name, texture);
-        
-        if (source instanceof File) {
-          URL.revokeObjectURL(url);
-        }
-        
-        console.log(`🖼️ 纹理加载完成: ${name}`);
-        resolve(texture);
-      }, undefined, reject);
+      loader.load(
+        url,
+        (texture) => {
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+
+          this.textures.set(name, texture);
+
+          if (source instanceof File) {
+            URL.revokeObjectURL(url);
+          }
+
+          console.log(`🖼️ 纹理加载完成: ${name}`);
+          resolve(texture);
+        },
+        undefined,
+        reject
+      );
     });
   }
 
@@ -236,10 +241,8 @@ export class MaterialEditor {
    * @param {THREE.Texture|string} texture
    */
   async setColorMap(texture) {
-    const map = typeof texture === 'string' 
-      ? await this.loadTexture('colorMap', texture)
-      : texture;
-      
+    const map = typeof texture === 'string' ? await this.loadTexture('colorMap', texture) : texture;
+
     if (this.currentMaterial && 'map' in this.currentMaterial) {
       this.currentMaterial.map = map;
       this.currentMaterial.needsUpdate = true;
@@ -251,10 +254,9 @@ export class MaterialEditor {
    * @param {THREE.Texture|string} texture
    */
   async setNormalMap(texture) {
-    const map = typeof texture === 'string'
-      ? await this.loadTexture('normalMap', texture)
-      : texture;
-      
+    const map =
+      typeof texture === 'string' ? await this.loadTexture('normalMap', texture) : texture;
+
     if (this.currentMaterial && 'normalMap' in this.currentMaterial) {
       this.currentMaterial.normalMap = map;
       this.currentMaterial.needsUpdate = true;
@@ -266,10 +268,9 @@ export class MaterialEditor {
    * @param {THREE.Texture|string} texture
    */
   async setRoughnessMap(texture) {
-    const map = typeof texture === 'string'
-      ? await this.loadTexture('roughnessMap', texture)
-      : texture;
-      
+    const map =
+      typeof texture === 'string' ? await this.loadTexture('roughnessMap', texture) : texture;
+
     if (this.currentMaterial && 'roughnessMap' in this.currentMaterial) {
       this.currentMaterial.roughnessMap = map;
       this.currentMaterial.needsUpdate = true;
@@ -281,10 +282,9 @@ export class MaterialEditor {
    * @param {THREE.Texture|string} texture
    */
   async setMetalnessMap(texture) {
-    const map = typeof texture === 'string'
-      ? await this.loadTexture('metalnessMap', texture)
-      : texture;
-      
+    const map =
+      typeof texture === 'string' ? await this.loadTexture('metalnessMap', texture) : texture;
+
     if (this.currentMaterial && 'metalnessMap' in this.currentMaterial) {
       this.currentMaterial.metalnessMap = map;
       this.currentMaterial.needsUpdate = true;
@@ -297,10 +297,8 @@ export class MaterialEditor {
    * @param {number} intensity
    */
   async setAOMap(texture, intensity = 1) {
-    const map = typeof texture === 'string'
-      ? await this.loadTexture('aoMap', texture)
-      : texture;
-      
+    const map = typeof texture === 'string' ? await this.loadTexture('aoMap', texture) : texture;
+
     if (this.currentMaterial && 'aoMap' in this.currentMaterial) {
       this.currentMaterial.aoMap = map;
       this.currentMaterial.aoMapIntensity = intensity;
@@ -314,10 +312,9 @@ export class MaterialEditor {
    * @param {number} scale
    */
   async setDisplacementMap(texture, scale = 0.1) {
-    const map = typeof texture === 'string'
-      ? await this.loadTexture('displacementMap', texture)
-      : texture;
-      
+    const map =
+      typeof texture === 'string' ? await this.loadTexture('displacementMap', texture) : texture;
+
     if (this.currentMaterial && 'displacementMap' in this.currentMaterial) {
       this.currentMaterial.displacementMap = map;
       this.currentMaterial.displacementScale = scale;
@@ -331,7 +328,7 @@ export class MaterialEditor {
    * @param {number} repeatY
    */
   setTextureRepeat(repeatX, repeatY = repeatX) {
-    this.textures.forEach(texture => {
+    this.textures.forEach((texture) => {
       texture.repeat.set(repeatX, repeatY);
     });
   }
@@ -352,7 +349,7 @@ export class MaterialEditor {
    */
   setSide(side) {
     if (!this.currentMaterial) return;
-    
+
     switch (side) {
       case 'front':
         this.currentMaterial.side = THREE.FrontSide;
@@ -374,7 +371,7 @@ export class MaterialEditor {
     if (!this.currentMaterial) return {};
 
     const props = {
-      type: this.currentMaterial.type
+      type: this.currentMaterial.type,
     };
 
     if ('color' in this.currentMaterial) {
@@ -432,14 +429,14 @@ export class MaterialEditor {
    * 销毁
    */
   dispose() {
-    this.textures.forEach(texture => texture.dispose());
+    this.textures.forEach((texture) => texture.dispose());
     this.textures.clear();
-    
+
     if (this.currentMaterial) {
       this.disposeMaterial(this.currentMaterial);
       this.currentMaterial = null;
     }
-    
+
     this.targetMesh = null;
     console.log('🗑️ MaterialEditor 已销毁');
   }

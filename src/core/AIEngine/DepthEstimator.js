@@ -3,7 +3,7 @@
  * @module core/AIEngine/DepthEstimator
  */
 
-import { ModelManager } from './ModelManager.js';
+// import { ModelManager } from './ModelManager.js';
 
 /** @constant {string} */
 const MIDAS_MODEL_ID = 'midas-small';
@@ -23,13 +23,13 @@ export class DepthEstimator {
   constructor(modelManager) {
     /** @type {ModelManager} */
     this.modelManager = modelManager;
-    
+
     /** @type {boolean} */
     this._ready = false;
-    
+
     /** @private */
     this._inputSize = 256;
-    
+
     /** @private */
     this._canvas = document.createElement('canvas');
     this._ctx = this._canvas.getContext('2d');
@@ -41,12 +41,11 @@ export class DepthEstimator {
   async init() {
     try {
       await this.modelManager.loadModel(MIDAS_MODEL_ID, MIDAS_MODEL_PATH, {
-        type: 'onnx'
+        type: 'onnx',
       });
-      
+
       this._ready = true;
       console.log('✅ DepthEstimator 初始化完成');
-      
     } catch (error) {
       console.error('❌ DepthEstimator 初始化失败:', error);
       throw error;
@@ -96,7 +95,7 @@ export class DepthEstimator {
   async _preprocessImage(input) {
     // 获取原始尺寸
     let width, height, imageData;
-    
+
     if (input instanceof HTMLImageElement) {
       width = input.naturalWidth;
       height = input.naturalHeight;
@@ -104,7 +103,6 @@ export class DepthEstimator {
       this._canvas.height = this._inputSize;
       this._ctx.drawImage(input, 0, 0, this._inputSize, this._inputSize);
       imageData = this._ctx.getImageData(0, 0, this._inputSize, this._inputSize);
-      
     } else if (input instanceof HTMLCanvasElement) {
       width = input.width;
       height = input.height;
@@ -112,7 +110,6 @@ export class DepthEstimator {
       this._canvas.height = this._inputSize;
       this._ctx.drawImage(input, 0, 0, this._inputSize, this._inputSize);
       imageData = this._ctx.getImageData(0, 0, this._inputSize, this._inputSize);
-      
     } else if (input instanceof ImageData) {
       width = input.width;
       height = input.height;
@@ -126,7 +123,6 @@ export class DepthEstimator {
       tempCtx.putImageData(input, 0, 0);
       this._ctx.drawImage(tempCanvas, 0, 0, this._inputSize, this._inputSize);
       imageData = this._ctx.getImageData(0, 0, this._inputSize, this._inputSize);
-      
     } else {
       throw new Error('不支持的输入类型');
     }
@@ -143,7 +139,7 @@ export class DepthEstimator {
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
         const srcIdx = (y * size + x) * 4;
-        
+
         // RGB 通道，归一化到 [0, 1]，然后标准化
         floatData[0 * size * size + y * size + x] = (data[srcIdx] / 255 - mean[0]) / std[0];
         floatData[1 * size * size + y * size + x] = (data[srcIdx + 1] / 255 - mean[1]) / std[1];
@@ -166,7 +162,7 @@ export class DepthEstimator {
     // 获取输出 tensor
     const outputTensor = output[Object.keys(output)[0]];
     const depthData = outputTensor.data;
-    const size = this._inputSize;
+    // const size = this._inputSize;
 
     // 归一化深度值到 [0, 1]
     let minDepth = Infinity;
@@ -205,10 +201,10 @@ export class DepthEstimator {
     for (let i = 0; i < depthMap.length; i++) {
       const value = Math.floor(depthMap[i] * 255);
       const idx = i * 4;
-      imageData.data[idx] = value;     // R
+      imageData.data[idx] = value; // R
       imageData.data[idx + 1] = value; // G
       imageData.data[idx + 2] = value; // B
-      imageData.data[idx + 3] = 255;   // A
+      imageData.data[idx + 3] = 255; // A
     }
 
     ctx.putImageData(imageData, 0, 0);

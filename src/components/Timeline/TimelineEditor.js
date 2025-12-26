@@ -8,7 +8,7 @@ import { BaseComponent } from '../core/BaseComponent.js';
 export class TimelineEditor extends BaseComponent {
   constructor() {
     super();
-    this.setStyles(/* css */`
+    this.setStyles(/* css */ `
       :host {
         display: block;
         height: 120px;
@@ -107,7 +107,7 @@ export class TimelineEditor extends BaseComponent {
         color: #888;
       }
     `);
-    
+
     this.totalTime = 10; // 秒
     this.zoom = 100; // 像素/秒
   }
@@ -135,12 +135,12 @@ export class TimelineEditor extends BaseComponent {
     const addKeyBtn = this.$('#addKeyBtn');
     const clearBtn = this.$('#clearBtn');
     const track = this.$('#track');
-    
+
     if (playBtn) playBtn.onclick = () => this.emit('play');
     if (stopBtn) stopBtn.onclick = () => this.emit('stop');
     if (addKeyBtn) addKeyBtn.onclick = () => this.emit('addKeyframe');
     if (clearBtn) clearBtn.onclick = () => this.emit('clearParams');
-    
+
     // 点击时间轴跳转
     if (track) {
       track.onmousedown = (e) => {
@@ -149,7 +149,7 @@ export class TimelineEditor extends BaseComponent {
         const time = this._xToTime(x);
         this.setTime(time);
         this.emit('seek', { time });
-        
+
         // 简单拖拽
         const onMove = (moveEvent) => {
           const moveX = moveEvent.clientX - rect.left;
@@ -157,12 +157,12 @@ export class TimelineEditor extends BaseComponent {
           this.setTime(moveTime);
           this.emit('seek', { time: moveTime });
         };
-        
+
         const onUp = () => {
           window.removeEventListener('mousemove', onMove);
           window.removeEventListener('mouseup', onUp);
         };
-        
+
         window.addEventListener('mousemove', onMove);
         window.addEventListener('mouseup', onUp);
       };
@@ -177,11 +177,12 @@ export class TimelineEditor extends BaseComponent {
     const x = Math.min(Math.max(0, time * this.zoom), this.totalTime * this.zoom);
     const playhead = this.$('#playhead');
     const display = this.$('.time-display');
-    
+
     if (playhead) playhead.style.left = `${x}px`;
-    if (display) display.textContent = `${this._formatTime(time)} / ${this._formatTime(this.totalTime)}`;
+    if (display)
+      display.textContent = `${this._formatTime(time)} / ${this._formatTime(this.totalTime)}`;
   }
-  
+
   /**
    * 添加关键帧标记
    * @param {number} time
@@ -195,33 +196,33 @@ export class TimelineEditor extends BaseComponent {
     marker.className = 'keyframe';
     marker.style.left = `${time * this.zoom}px`;
     marker.title = `Keyframe @ ${time.toFixed(2)}s`;
-    
+
     marker.onmousedown = (e) => {
       e.stopPropagation(); // 防止触发 playhead 跳转
       this.$('.selected')?.classList.remove('selected');
       marker.classList.add('selected');
       this.emit('selectKeyframe', { time, data });
     };
-    
+
     track.appendChild(marker);
   }
-  
+
   /**
    * 清除所有标记
    */
   clearMarkers() {
     const markers = this.$$('.keyframe');
-    markers.forEach(m => m.remove());
+    markers.forEach((m) => m.remove());
   }
 
   _xToTime(x) {
     return Math.max(0, Math.min(this.totalTime, x / this.zoom));
   }
-  
+
   _formatTime(seconds) {
     const m = Math.floor(seconds / 60);
     const s = Math.floor(seconds % 60);
-    const ms = Math.floor((seconds % 1) * 100);
+    // const ms = Math.floor((seconds % 1) * 100);
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }
 }

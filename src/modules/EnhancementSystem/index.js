@@ -4,3 +4,4 @@
  */
 
 export { SuperResolution, UpscaleFactor, UpscaleMethod } from './SuperResolution.js';
+export { FrameInterpolation, InterpolationMethod } from './FrameInterpolation.js';

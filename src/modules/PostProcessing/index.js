@@ -5,3 +5,10 @@
 
 export { EffectsManager, VignetteShader, ColorCorrectionShader } from './EffectsManager.js';
 export { LUTManager, LUTPreset } from './LUTManager.js';
+export {
+  EffectsStack,
+  EffectType,
+  ChromaticAberrationShader,
+  FilmGrainShader,
+  TonemappingShader,
+} from './EffectsStack.js';

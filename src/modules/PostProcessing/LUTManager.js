@@ -19,7 +19,7 @@ export const LUTPreset = {
   NOIR: 'noir',
   VIBRANT: 'vibrant',
   MUTED: 'muted',
-  TEAL_ORANGE: 'tealOrange'
+  TEAL_ORANGE: 'tealOrange',
 };
 
 /**
@@ -30,16 +30,16 @@ export class LUTManager {
   constructor() {
     /** @type {Map<string, THREE.Data3DTexture>} */
     this.luts = new Map();
-    
+
     /** @type {string|null} */
     this.currentLUT = null;
-    
+
     /** @type {number} */
     this.intensity = 1.0;
-    
+
     /** @private */
     this._lutSize = 32;
-    
+
     this._initBuiltInLUTs();
   }
 
@@ -55,7 +55,7 @@ export class LUTManager {
         this.luts.set(preset, lutData);
       }
     }
-    
+
     console.log(`✅ LUTManager 初始化完成 (${this.luts.size} 预设)`);
   }
 
@@ -66,20 +66,20 @@ export class LUTManager {
   _generateLUT(preset) {
     const size = this._lutSize;
     const data = new Uint8Array(size * size * size * 4);
-    
+
     for (let b = 0; b < size; b++) {
       for (let g = 0; g < size; g++) {
         for (let r = 0; r < size; r++) {
           const index = (b * size * size + g * size + r) * 4;
-          
+
           // 归一化输入颜色
           let rn = r / (size - 1);
           let gn = g / (size - 1);
           let bn = b / (size - 1);
-          
+
           // 应用颜色变换
           [rn, gn, bn] = this._applyColorTransform(rn, gn, bn, preset);
-          
+
           // 写入数据
           data[index] = Math.round(rn * 255);
           data[index + 1] = Math.round(gn * 255);
@@ -114,44 +114,46 @@ export class LUTManager {
         g = this._curve(g, 1.05, 0.03);
         b = this._curve(b, 0.95, 0.08);
         break;
-        
+
       case LUTPreset.VINTAGE:
         // 复古：褪色，暖色调
         r = this._curve(r, 0.9, 0.1) * 0.95 + 0.05;
         g = this._curve(g, 0.85, 0.08) * 0.9 + 0.05;
         b = this._curve(b, 0.8, 0.05) * 0.85 + 0.05;
         break;
-        
+
       case LUTPreset.WARM:
         // 暖色调
         r = Math.min(1, r * 1.1);
         g = g * 1.0;
         b = Math.max(0, b * 0.85);
         break;
-        
+
       case LUTPreset.COOL:
         // 冷色调
         r = Math.max(0, r * 0.9);
         g = g * 0.95;
         b = Math.min(1, b * 1.15);
         break;
-        
-      case LUTPreset.SEPIA:
+
+      case LUTPreset.SEPIA: {
         // 褐色调
         const gray = r * 0.299 + g * 0.587 + b * 0.114;
         r = Math.min(1, gray * 1.2);
         g = gray * 1.0;
         b = gray * 0.8;
         break;
-        
-      case LUTPreset.NOIR:
+      }
+
+      case LUTPreset.NOIR: {
         // 黑白高对比
         const lum = r * 0.299 + g * 0.587 + b * 0.114;
         const contrast = this._curve(lum, 1.3, 0);
         r = g = b = contrast;
         break;
-        
-      case LUTPreset.VIBRANT:
+      }
+
+      case LUTPreset.VIBRANT: {
         // 饱和度提升
         const sat = 1.3;
         const lumV = r * 0.299 + g * 0.587 + b * 0.114;
@@ -159,8 +161,9 @@ export class LUTManager {
         g = lumV + (g - lumV) * sat;
         b = lumV + (b - lumV) * sat;
         break;
-        
-      case LUTPreset.MUTED:
+      }
+
+      case LUTPreset.MUTED: {
         // 柔和降饱和
         const satM = 0.7;
         const lumM = r * 0.299 + g * 0.587 + b * 0.114;
@@ -168,8 +171,9 @@ export class LUTManager {
         g = lumM + (g - lumM) * satM;
         b = lumM + (b - lumM) * satM;
         break;
-        
-      case LUTPreset.TEAL_ORANGE:
+      }
+
+      case LUTPreset.TEAL_ORANGE: {
         // 青橙对比
         const lumTO = r * 0.299 + g * 0.587 + b * 0.114;
         if (lumTO < 0.5) {
@@ -184,14 +188,11 @@ export class LUTManager {
           b = b * 0.8;
         }
         break;
+      }
     }
 
     // 钳制范围
-    return [
-      Math.max(0, Math.min(1, r)),
-      Math.max(0, Math.min(1, g)),
-      Math.max(0, Math.min(1, b))
-    ];
+    return [Math.max(0, Math.min(1, r)), Math.max(0, Math.min(1, g)), Math.max(0, Math.min(1, b))];
   }
 
   /**
@@ -215,10 +216,10 @@ export class LUTManager {
       const response = await fetch(url);
       const text = await response.text();
       const texture = this._parseCubeFile(text);
-      
+
       this.luts.set(name, texture);
       console.log(`📦 LUT 加载完成: ${name}`);
-      
+
       return texture;
     } catch (error) {
       console.error(`LUT 加载失败: ${name}`, error);
@@ -237,10 +238,15 @@ export class LUTManager {
 
     for (const line of lines) {
       const trimmed = line.trim();
-      
+
       if (trimmed.startsWith('LUT_3D_SIZE')) {
         size = parseInt(trimmed.split(/\s+/)[1]);
-      } else if (trimmed && !trimmed.startsWith('#') && !trimmed.startsWith('TITLE') && !trimmed.startsWith('DOMAIN')) {
+      } else if (
+        trimmed &&
+        !trimmed.startsWith('#') &&
+        !trimmed.startsWith('TITLE') &&
+        !trimmed.startsWith('DOMAIN')
+      ) {
         const parts = trimmed.split(/\s+/).map(parseFloat);
         if (parts.length >= 3 && !isNaN(parts[0])) {
           values.push(...parts.slice(0, 3));
@@ -259,7 +265,7 @@ export class LUTManager {
       for (let g = 0; g < size; g++) {
         for (let r = 0; r < size; r++) {
           const index = (b * size * size + g * size + r) * 4;
-          
+
           data[index] = Math.round(values[valueIndex++] * 255);
           data[index + 1] = Math.round(values[valueIndex++] * 255);
           data[index + 2] = Math.round(values[valueIndex++] * 255);
@@ -328,7 +334,7 @@ export class LUTManager {
         tDiffuse: { value: null },
         tLUT: { value: null },
         lutSize: { value: this._lutSize },
-        intensity: { value: this.intensity }
+        intensity: { value: this.intensity },
       },
       vertexShader: /* glsl */ `
         varying vec2 vUv;
@@ -358,7 +364,7 @@ export class LUTManager {
           // 混合原始颜色和 LUT 颜色
           gl_FragColor = vec4(mix(color.rgb, lutColor, intensity), color.a);
         }
-      `
+      `,
     });
   }
 
@@ -374,7 +380,7 @@ export class LUTManager {
    * 销毁
    */
   dispose() {
-    this.luts.forEach(lut => {
+    this.luts.forEach((lut) => {
       lut.dispose();
     });
     this.luts.clear();

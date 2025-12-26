@@ -4,3 +4,5 @@
  */
 
 export { MediaExporter, ExportFormat } from './MediaExporter.js';
+export { ErrorHandler, AppError, ErrorLevel, ErrorType, errorHandler } from './ErrorHandler.js';
+export { keyboardShortcuts } from './KeyboardShortcuts.js';

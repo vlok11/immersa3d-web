@@ -17,7 +17,7 @@ export const ProjectionMode = {
   FISHEYE: 'fisheye',
   STEREOGRAPHIC: 'stereographic',
   EQUIRECTANGULAR: 'equirectangular',
-  CUBEMAP: 'cubemap'
+  CUBEMAP: 'cubemap',
 };
 
 /**
@@ -32,16 +32,16 @@ export class ProjectionManager {
   constructor(scene, camera) {
     /** @type {THREE.Scene} */
     this.scene = scene;
-    
+
     /** @type {THREE.Camera} */
     this.camera = camera;
-    
+
     /** @type {string} */
     this.currentMode = ProjectionMode.PERSPECTIVE;
-    
+
     /** @private */
     this._projectedMesh = null;
-    
+
     /** @private */
     this._originalGeometry = null;
   }
@@ -94,7 +94,7 @@ export class ProjectionManager {
    * 应用透视投影（默认平面）
    * @private
    */
-  _applyPerspective(mesh, options = {}) {
+  _applyPerspective(mesh, _options = {}) {
     // 恢复原始几何体
     if (this._originalGeometry) {
       mesh.geometry.dispose();
@@ -121,7 +121,7 @@ export class ProjectionManager {
       phiStart = 0,
       phiLength = Math.PI,
       thetaStart = 0,
-      thetaLength = Math.PI * 2
+      thetaLength = Math.PI * 2,
     } = options;
 
     if (!this._originalGeometry) return;
@@ -168,11 +168,11 @@ export class ProjectionManager {
 
     newGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     newGeometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-    
+
     if (this._originalGeometry.index) {
       newGeometry.setIndex(this._originalGeometry.index.clone());
     }
-    
+
     newGeometry.computeVertexNormals();
 
     mesh.geometry.dispose();
@@ -184,12 +184,7 @@ export class ProjectionManager {
    * @private
    */
   _applyCylindrical(mesh, options = {}) {
-    const {
-      radius = 2,
-      height = 2,
-      thetaStart = -Math.PI / 2,
-      thetaLength = Math.PI
-    } = options;
+    const { radius = 2, height = 2, thetaStart = -Math.PI / 2, thetaLength = Math.PI } = options;
 
     if (!this._originalGeometry) return;
 
@@ -231,11 +226,11 @@ export class ProjectionManager {
 
     newGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     newGeometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-    
+
     if (this._originalGeometry.index) {
       newGeometry.setIndex(this._originalGeometry.index.clone());
     }
-    
+
     newGeometry.computeVertexNormals();
 
     mesh.geometry.dispose();
@@ -281,7 +276,7 @@ export class ProjectionManager {
 
       const newX = centerX + dx * scale;
       const newY = centerY + dy * scale;
-      
+
       // 添加曲率
       const curveAmount = (1 - distortedDist) * radius * 0.5;
       const newZ = z + curveAmount;
@@ -296,11 +291,11 @@ export class ProjectionManager {
 
     newGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     newGeometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-    
+
     if (this._originalGeometry.index) {
       newGeometry.setIndex(this._originalGeometry.index.clone());
     }
-    
+
     newGeometry.computeVertexNormals();
 
     mesh.geometry.dispose();

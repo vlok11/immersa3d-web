@@ -16,7 +16,7 @@ export const WeatherPreset = {
   OVERCAST: 'overcast',
   SUNSET: 'sunset',
   NIGHT: 'night',
-  GOLDEN_HOUR: 'goldenHour'
+  GOLDEN_HOUR: 'goldenHour',
 };
 
 /**
@@ -31,22 +31,22 @@ export class SkyController {
   constructor(scene, renderer) {
     /** @type {THREE.Scene} */
     this.scene = scene;
-    
+
     /** @type {THREE.WebGLRenderer} */
     this.renderer = renderer;
-    
+
     /** @type {Sky|null} */
     this.sky = null;
-    
+
     /** @type {THREE.Vector3} */
     this.sun = new THREE.Vector3();
-    
+
     /** @type {THREE.PMREMGenerator|null} */
     this.pmremGenerator = null;
-    
+
     /** @type {THREE.Texture|null} */
     this.envMap = null;
-    
+
     /** @private */
     this._parameters = {
       turbidity: 10,
@@ -54,9 +54,9 @@ export class SkyController {
       mieCoefficient: 0.005,
       mieDirectionalG: 0.7,
       elevation: 45,
-      azimuth: 180
+      azimuth: 180,
     };
-    
+
     this._init();
   }
 
@@ -69,14 +69,14 @@ export class SkyController {
     this.sky = new Sky();
     this.sky.scale.setScalar(10000);
     this.scene.add(this.sky);
-    
+
     // 创建 PMREM 生成器（用于环境贴图）
     this.pmremGenerator = new THREE.PMREMGenerator(this.renderer);
     this.pmremGenerator.compileEquirectangularShader();
-    
+
     // 应用默认参数
     this._updateSky();
-    
+
     console.log('✅ SkyController 初始化完成');
   }
 
@@ -86,19 +86,19 @@ export class SkyController {
    */
   _updateSky() {
     const uniforms = this.sky.material.uniforms;
-    
+
     uniforms['turbidity'].value = this._parameters.turbidity;
     uniforms['rayleigh'].value = this._parameters.rayleigh;
     uniforms['mieCoefficient'].value = this._parameters.mieCoefficient;
     uniforms['mieDirectionalG'].value = this._parameters.mieDirectionalG;
-    
+
     // 计算太阳位置
     const phi = THREE.MathUtils.degToRad(90 - this._parameters.elevation);
     const theta = THREE.MathUtils.degToRad(this._parameters.azimuth);
-    
+
     this.sun.setFromSphericalCoords(1, phi, theta);
     uniforms['sunPosition'].value.copy(this.sun);
-    
+
     // 更新环境贴图
     this._updateEnvironment();
   }
@@ -111,7 +111,7 @@ export class SkyController {
     if (this.envMap) {
       this.envMap.dispose();
     }
-    
+
     // 生成新的环境贴图
     this.envMap = this.pmremGenerator.fromScene(this.sky).texture;
     this.scene.environment = this.envMap;
@@ -127,10 +127,10 @@ export class SkyController {
     // 6:00 日出，12:00 正午，18:00 日落
     const normalizedTime = ((hour - 6) / 12) * Math.PI;
     const elevation = Math.sin(normalizedTime) * 90;
-    
+
     // 限制范围
     this._parameters.elevation = Math.max(-10, Math.min(90, elevation));
-    
+
     // 根据时间调整大气参数
     if (hour >= 5 && hour < 7) {
       // 黎明
@@ -149,7 +149,7 @@ export class SkyController {
       this._parameters.turbidity = 2;
       this._parameters.rayleigh = 0.5;
     }
-    
+
     this._updateSky();
     console.log(`🌅 时间设置: ${hour}:00`);
   }
@@ -167,7 +167,7 @@ export class SkyController {
         this._parameters.mieDirectionalG = 0.8;
         this._parameters.elevation = 60;
         break;
-        
+
       case WeatherPreset.CLOUDY:
         this._parameters.turbidity = 15;
         this._parameters.rayleigh = 1;
@@ -175,7 +175,7 @@ export class SkyController {
         this._parameters.mieDirectionalG = 0.5;
         this._parameters.elevation = 45;
         break;
-        
+
       case WeatherPreset.OVERCAST:
         this._parameters.turbidity = 20;
         this._parameters.rayleigh = 0.5;
@@ -183,7 +183,7 @@ export class SkyController {
         this._parameters.mieDirectionalG = 0.3;
         this._parameters.elevation = 30;
         break;
-        
+
       case WeatherPreset.SUNSET:
         this._parameters.turbidity = 4;
         this._parameters.rayleigh = 4;
@@ -191,7 +191,7 @@ export class SkyController {
         this._parameters.mieDirectionalG = 0.95;
         this._parameters.elevation = 5;
         break;
-        
+
       case WeatherPreset.NIGHT:
         this._parameters.turbidity = 2;
         this._parameters.rayleigh = 0.2;
@@ -199,7 +199,7 @@ export class SkyController {
         this._parameters.mieDirectionalG = 0.8;
         this._parameters.elevation = -10;
         break;
-        
+
       case WeatherPreset.GOLDEN_HOUR:
         this._parameters.turbidity = 6;
         this._parameters.rayleigh = 3;
@@ -207,12 +207,12 @@ export class SkyController {
         this._parameters.mieDirectionalG = 0.95;
         this._parameters.elevation = 15;
         break;
-        
+
       default:
         console.warn(`未知天气预设: ${preset}`);
         return;
     }
-    
+
     this._updateSky();
     console.log(`🌤️ 天气预设: ${preset}`);
   }
@@ -253,23 +253,28 @@ export class SkyController {
   async loadHDRI(url) {
     const { RGBELoader } = await import('three/addons/loaders/RGBELoader.js');
     const loader = new RGBELoader();
-    
+
     return new Promise((resolve, reject) => {
-      loader.load(url, (texture) => {
-        // 隐藏程序化天空
-        this.sky.visible = false;
-        
-        // 设置 HDRI 环境
-        texture.mapping = THREE.EquirectangularReflectionMapping;
-        this.scene.background = texture;
-        this.scene.environment = this.pmremGenerator.fromEquirectangular(texture).texture;
-        
-        if (this.envMap) this.envMap.dispose();
-        this.envMap = this.scene.environment;
-        
-        console.log('🖼️ HDRI 加载完成');
-        resolve();
-      }, undefined, reject);
+      loader.load(
+        url,
+        (texture) => {
+          // 隐藏程序化天空
+          this.sky.visible = false;
+
+          // 设置 HDRI 环境
+          texture.mapping = THREE.EquirectangularReflectionMapping;
+          this.scene.background = texture;
+          this.scene.environment = this.pmremGenerator.fromEquirectangular(texture).texture;
+
+          if (this.envMap) this.envMap.dispose();
+          this.envMap = this.scene.environment;
+
+          console.log('🖼️ HDRI 加载完成');
+          resolve();
+        },
+        undefined,
+        reject
+      );
     });
   }
 
@@ -299,17 +304,17 @@ export class SkyController {
       this.sky.material.dispose();
       this.sky = null;
     }
-    
+
     if (this.envMap) {
       this.envMap.dispose();
       this.envMap = null;
     }
-    
+
     if (this.pmremGenerator) {
       this.pmremGenerator.dispose();
       this.pmremGenerator = null;
     }
-    
+
     console.log('🗑️ SkyController 已销毁');
   }
 }
